@@ -36,7 +36,7 @@ namespace Rainmeter.Forms
             {
                 return "https://oauth.vk.com/authorize?client_id=3328403"
                        + "&redirect_uri=https://oauth.vk.com/blank.html"
-                       + "&scope=audio&display=popup&response_type=token"
+                       + "&scope=friends,audio&display=popup&response_type=token"
 #if DEBUG
  + "&revoke=1";
 #else

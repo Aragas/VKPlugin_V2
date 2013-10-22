@@ -1,5 +1,6 @@
 ﻿using Rainmeter.AudioPlayer;
 using Rainmeter.Forms;
+using Rainmeter.Information;
 
 namespace Rainmeter.Plugin
 {

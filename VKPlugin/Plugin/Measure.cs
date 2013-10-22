@@ -25,6 +25,8 @@ namespace Rainmeter.Plugin
 
         internal void Reload(RainmeterAPI rm, ref double maxValue)
         {
+            Info.Update();
+
             string playertype = rm.ReadString("PlayerType", "");
             string friendtype = rm.ReadString("FriendType", "");
             string type = rm.ReadString("Type", "");
@@ -116,7 +118,7 @@ namespace Rainmeter.Plugin
             switch (_type)
             {
                 case Type.Messages:
-                    return (double)Info.MessagesUnReadCount;
+                    return (Info.MessagesUnReadCount >= 1) ? 1 : 0;
 
                 case Type.Player:
                     #region Player

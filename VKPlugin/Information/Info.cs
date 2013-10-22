@@ -7,6 +7,8 @@ namespace Rainmeter.Information
 {
     public static class Info
     {
+        #region Internal
+
         private static int _friendsCount;
         private static int FriendsCount
         {
@@ -72,6 +74,8 @@ namespace Rainmeter.Information
         private static readonly Friends Friends = new Friends();
         private static readonly Messages Messages = new Messages();
 
+        #endregion
+
         #region UserData
 
         private static string[] _userArray;
@@ -127,8 +131,9 @@ namespace Rainmeter.Information
 
         public static void Update()
         {
-            _friendsUserData = null;
+            _userArray = null;
             _messagesUnReadCount = null;
         }
     }
+
 }
