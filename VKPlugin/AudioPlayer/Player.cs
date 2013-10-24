@@ -1,10 +1,10 @@
-﻿using System;
+﻿using NAudio.Wave;
+using Rainmeter.Forms;
+using Rainmeter.Methods;
+using System;
 using System.IO;
 using System.Net;
 using System.Threading;
-using NAudio.Wave;
-using Rainmeter.Forms;
-using Rainmeter.Methods;
 
 namespace Rainmeter.AudioPlayer
 {
@@ -12,54 +12,69 @@ namespace Rainmeter.AudioPlayer
     // Save mp3 to disk while playing from url.
     // Check if mp3 is saved and play local.
     // Play next mp3 after previous (find better method).
+    // !!! NO OPTIMIZATIONS HERE!!! I DUNNO WHY THIS IS WORKING AT ALL
 
     public static class Player
     {
-        internal static Playing Option = Playing.Init;
         internal static WaveChannel32 AudioStream;
+        internal static Playing Option = Playing.Init;
+        private static readonly Audio Au = new Audio();
         private static GetStream _gStream = new GetStream();
         private static WaveOut _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
-        private static readonly Audio Au = new Audio();
+
+        internal enum Playing
+        {
+            Init,
+            Buffering,
+            Ready
+        }
 
         public static bool Played
         {
             get
             {
-                if (Option != Playing.Ready) return false;
+                if (Option != Playing.Ready)
+                    return false;
                 return AudioStream != null && (Duration < AudioStream.CurrentTime.TotalSeconds);
             }
         }
 
         #region Internal
 
-        private static string _token { get { return OAuth.Token; }}
-        private static string _id { get { return OAuth.Id; } }
         private static string[] _array;
-        private static int _numb;
 
-        private static bool ArrayExists
-        {
-            get { return _array != null; }
-        }
+        private static int _numb;
 
         private static string[] Array
         {
             get
             {
                 if (ArrayExists) return _array;
-                Au.Token = _token;
-                Au.Id = _id;
+                Au.Token = Token;
+                Au.Id = Id;
                 _array = Au.AudioList();
                 return _array;
             }
         }
 
-        private static string Url
+        private static bool ArrayExists
         {
-            get { return Array[_numb].Split('#')[4]; }
+            get { return _array != null; }
         }
 
-        #endregion
+        private static string Id { get { return OAuth.Id; } }
+
+        private static string Token { get { return OAuth.Token; } }
+
+        private static string Url
+        {
+            get
+            {
+                return Array[_numb].Split('#')[4];
+            }
+        }
+
+        #endregion Internal
 
         #region Variables
 
@@ -70,36 +85,8 @@ namespace Rainmeter.AudioPlayer
         {
             get
             {
-                if (ArrayExists) return Array[_numb].Split('#')[1];
-                return null;
-            }
-        }
-
-        public static string Title
-        {
-            get
-            {
-                if (ArrayExists) return Array[_numb].Split('#')[2];
-                return null;
-            }
-        }
-
-        public static string NextArtist
-        {
-            get
-            {
-                if (!ArrayExists) return null;
-                if (_numb < Array.Length) return Array[_numb + 1].Split('#')[1];
-                return null;
-            }
-        }
-
-        public static string NextTitle
-        {
-            get
-            {
-                if (!ArrayExists) return null;
-                if (_numb < Array.Length) return Array[_numb + 1].Split('#')[2];
+                if (ArrayExists)
+                    return Array[_numb].Split('#')[1];
                 return null;
             }
         }
@@ -108,18 +95,33 @@ namespace Rainmeter.AudioPlayer
         {
             get
             {
-                if (ArrayExists) return Convert.ToInt32(Array[_numb].Split('#')[3]);
+                if (ArrayExists)
+                    return Convert.ToInt32(Array[_numb].Split('#')[3]);
                 return 0.0;
             }
         }
 
-        public static double State
+        public static string NextArtist
         {
             get
             {
-                if (_waveOut.PlaybackState == PlaybackState.Playing) return 1.0;
-                if (_waveOut.PlaybackState == PlaybackState.Paused) return 2.0;
-                return 0.0;
+                if (!ArrayExists)
+                    return null;
+                if (_numb < Array.Length)
+                    return Array[_numb + 1].Split('#')[1];
+                return null;
+            }
+        }
+
+        public static string NextTitle
+        {
+            get
+            {
+                if (!ArrayExists)
+                    return null;
+                if (_numb < Array.Length)
+                    return Array[_numb + 1].Split('#')[2];
+                return null;
             }
         }
 
@@ -127,8 +129,10 @@ namespace Rainmeter.AudioPlayer
         {
             get
             {
-                if (_waveOut.PlaybackState == PlaybackState.Stopped) return 0.0;
-                if (!Played) return AudioStream.CurrentTime.TotalSeconds;
+                if (_waveOut.PlaybackState == PlaybackState.Stopped)
+                    return 0.0;
+                if (!Played)
+                    return AudioStream.CurrentTime.TotalSeconds;
                 return 0.0;
             }
         }
@@ -139,13 +143,35 @@ namespace Rainmeter.AudioPlayer
             {
                 if (Option == Playing.Ready)
                 {
-                    return Position/Duration;
+                    return Position / Duration;
                 }
                 return 0.0;
             }
         }
 
-        #endregion
+        public static double State
+        {
+            get
+            {
+                if (_waveOut.PlaybackState == PlaybackState.Playing)
+                    return 1.0;
+                if (_waveOut.PlaybackState == PlaybackState.Paused)
+                    return 2.0;
+                return 0.0;
+            }
+        }
+
+        public static string Title
+        {
+            get
+            {
+                if (ArrayExists)
+                    return Array[_numb].Split('#')[2];
+                return null;
+            }
+        }
+
+        #endregion Variables
 
         #region Execute
 
@@ -180,8 +206,10 @@ namespace Rainmeter.AudioPlayer
             }
             else if (Shuffle)
             {
-                if (_waveOut.PlaybackState == PlaybackState.Stopped) return;
-                if (_numb > Array.Length) return;
+                if (_waveOut.PlaybackState == PlaybackState.Stopped)
+                    return;
+                if (_numb > Array.Length)
+                    return;
 
                 var random = new Random();
                 _numb = random.Next(0, Array.Length);
@@ -196,49 +224,18 @@ namespace Rainmeter.AudioPlayer
             else Next();
         }
 
-        private static void PlayPause()
+        private static void _play()
         {
-            switch (Option)
-            {
-                case Playing.Ready:
-
-                    switch (_waveOut.PlaybackState)
-                    {
-                        case PlaybackState.Playing:
-                            Pause();
-                            break;
-                        case PlaybackState.Paused:
-                            _play();
-                            break;
-                        case PlaybackState.Stopped:
-                            Play();
-                            break;
-                    }
-                    break;
-
-                case Playing.Init:
-                {
-                    try
-                    {
-                        Play();
-                    }
-                    catch
-                    {
-                    }
-                }
-                    break;
-            }
-        }
-
-        private static void Stop()
-        {
-            _waveOut.Stop();
+            _waveOut.Play();
         }
 
         private static void Next()
         {
-            if (_waveOut.PlaybackState == PlaybackState.Stopped) return;
-            if (_numb >= Array.Length) return;
+            if (_waveOut.PlaybackState == PlaybackState.Stopped)
+                return;
+            if (_numb >= Array.Length)
+                return;
+
             _numb += 1;
 
             Stop();
@@ -250,10 +247,61 @@ namespace Rainmeter.AudioPlayer
             Play();
         }
 
+        private static void Pause()
+        {
+            _waveOut.Pause();
+        }
+
+        private static void Play()
+        {
+            _gStream.Url = Url;
+
+            _waveOut.Init(_gStream.Wave());
+            AudioStream.Volume = 0.7F;
+            _waveOut.Play();
+        }
+
+        private static void PlayPause()
+        {
+            switch (Option)
+            {
+                case Playing.Ready:
+
+                    switch (_waveOut.PlaybackState)
+                    {
+                        case PlaybackState.Playing:
+                            Pause();
+                            break;
+
+                        case PlaybackState.Paused:
+                            _play();
+                            break;
+
+                        case PlaybackState.Stopped:
+                            Play();
+                            break;
+                    }
+                    break;
+
+                case Playing.Init:
+                    {
+                        try
+                        {
+                            Play();
+                        }
+                        catch { }
+                    }
+                    break;
+            }
+        }
+
         private static void Previous()
         {
-            if (_waveOut.PlaybackState == PlaybackState.Stopped) return;
-            if (_numb <= 0) return;
+            if (_waveOut.PlaybackState == PlaybackState.Stopped)
+                return;
+            if (_numb <= 0)
+                return;
+
             _numb -= 1;
 
             Stop();
@@ -263,39 +311,6 @@ namespace Rainmeter.AudioPlayer
             _gStream = null;
             _gStream = new GetStream();
             Play();
-        }
-
-        private static void SetVolume(string value)
-        {
-#if DEBUG
-            if (value.StartsWith("+") || value.StartsWith("-"))
-            {
-                value = value.Substring(1);
-                AudioStream.Volume += Convert.ToSingle(Convert.ToInt32(value)/100);
-            }
-            else
-            {
-                AudioStream.Volume = Convert.ToSingle(Convert.ToInt32(value)/100);
-            }
-#else
-            if (value.StartsWith("+") || value.StartsWith("-"))
-            {
-                try
-                {
-                    value = value.Substring(1);
-                    AudioStream.Volume += Convert.ToSingle(Convert.ToInt32(value) / 100);
-                }
-                catch { }
-            }
-            else
-            {
-                try
-                {
-                    AudioStream.Volume = Convert.ToSingle(Convert.ToInt32(value) / 100);
-                }
-                catch { }
-            }
-#endif
         }
 
         private static void SetRepeat(string value)
@@ -344,33 +359,45 @@ namespace Rainmeter.AudioPlayer
             }
         }
 
-        private static void Play()
+        private static void SetVolume(string value)
         {
-            _gStream.Url = Url;
-
-            _waveOut.Init(_gStream.Wave());
-            AudioStream.Volume = 0.7F;
-            _waveOut.Play();
+#if DEBUG
+            if (value.StartsWith("+") || value.StartsWith("-"))
+            {
+                value = value.Substring(1);
+                AudioStream.Volume += Convert.ToSingle(Convert.ToInt32(value) / 100);
+            }
+            else
+            {
+                AudioStream.Volume = Convert.ToSingle(Convert.ToInt32(value) / 100);
+            }
+#else
+            if (value.StartsWith("+") || value.StartsWith("-"))
+            {
+                try
+                {
+                    value = value.Substring(1);
+                    AudioStream.Volume += Convert.ToSingle(Convert.ToInt32(value) / 100);
+                }
+                catch { }
+            }
+            else
+            {
+                try
+                {
+                    AudioStream.Volume = Convert.ToSingle(Convert.ToInt32(value) / 100);
+                }
+                catch { }
+            }
+#endif
         }
 
-        private static void _play()
+        private static void Stop()
         {
-            _waveOut.Play();
+            _waveOut.Stop();
         }
 
-        private static void Pause()
-        {
-            _waveOut.Pause();
-        }
-
-        #endregion
-
-        internal enum Playing
-        {
-            Init,
-            Buffering,
-            Ready
-        }
+        #endregion Execute
     }
 
     internal class GetStream : IDisposable
@@ -421,15 +448,15 @@ namespace Rainmeter.AudioPlayer
             new Thread(download).Start();
 
             // Pre-buffering some data to allow NAudio to start playing
-            while (_ms.Length < 65536*10)
+            while (_ms.Length < 65536 * 10)
             {
                 Player.Option = Player.Playing.Buffering;
 
-                Thread.Sleep(500);
+                Thread.Sleep(100);
             }
-            if (_ms.Length > 65536*10) Player.Option = Player.Playing.Ready;
+            if (_ms.Length > 65536 * 10) Player.Option = Player.Playing.Ready;
 
-            #endregion
+            #endregion Download
 
             _ms.Position = 0;
             _reader = new Mp3FileReader(_ms);

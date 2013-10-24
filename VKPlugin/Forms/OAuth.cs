@@ -9,25 +9,24 @@ namespace Rainmeter.Forms
     public partial class OAuth : Form
     {
         /// <summary>
-        ///     Get your Token (Use after OAuthRun()).
-        /// </summary>
-        public static string Token;
-
-        /// <summary>
         ///     Get your Id (Use after OAuthRun()).
         /// </summary>
         public static string Id;
 
-        public static bool TokenIdExist
-        {
-            get { return (Token != null || Id != null); }
-        }
-
+        /// <summary>
+        ///     Get your Token (Use after OAuthRun()).
+        /// </summary>
+        public static string Token;
 
         private OAuth()
         {
             InitializeComponent();
             webBrowser1.Navigate(Url);
+        }
+
+        public static bool TokenIdExist
+        {
+            get { return (Token != null || Id != null); }
         }
 
         private static string Url
@@ -58,15 +57,6 @@ namespace Rainmeter.Forms
             Close();
         }
 
-        private void webBrowser1_Navigated(object sender, WebBrowserNavigatedEventArgs e)
-        {
-            if (webBrowser1.Url.ToString() == Url)
-            {
-                WindowState = FormWindowState.Normal;
-            }
-            else SaveData();
-        }
-
         private void SaveData()
         {
             string data = webBrowser1.Url.ToString().Split('#')[1];
@@ -75,6 +65,15 @@ namespace Rainmeter.Forms
             Id = data.Split('=')[3];
 
             Close();
+        }
+
+        private void webBrowser1_Navigated(object sender, WebBrowserNavigatedEventArgs e)
+        {
+            if (webBrowser1.Url.ToString() == Url)
+            {
+                WindowState = FormWindowState.Normal;
+            }
+            else SaveData();
         }
     }
 }

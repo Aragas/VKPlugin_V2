@@ -11,11 +11,6 @@ namespace Rainmeter.Methods
         /// </summary>
         public string Token { private get; set; }
 
-        /// <summary>
-        ///     Set your Id.
-        /// </summary>
-        public string Id { private get; set; }
-
         public int UnReadMessages()
         {
             // Параметры.
@@ -35,10 +30,11 @@ namespace Rainmeter.Methods
 
             foreach (XmlNode node in nodeListError)
             {
-                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2)) return 0;
+                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2)) 
+                    return 0;
             }
 
-            #endregion
+            #endregion ErrorCheck
 
             string countstring = "0";
 
@@ -53,6 +49,5 @@ namespace Rainmeter.Methods
 
             return Convert.ToInt32(countstring);
         }
-
     }
 }

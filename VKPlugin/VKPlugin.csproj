@@ -120,6 +120,7 @@
   <ItemGroup>
     <Compile Include="API\DllExport.cs" />
     <Compile Include="API\Plugin.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Information\Info.cs" />
     <Compile Include="Methods\Audio.cs" />
     <Compile Include="Methods\Friends.cs" />
