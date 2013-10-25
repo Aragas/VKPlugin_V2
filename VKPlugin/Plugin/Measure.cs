@@ -7,12 +7,19 @@ namespace Rainmeter.Plugin
 {
     internal class Measure
     {
-        private int _userType = 1;
-        private AudioPlayer _audioType;
+        private PlayerType _audioType;
         private FriendsType _friendsType;
         private Type _type;
+        private int _userType = 1;
 
-        private enum AudioPlayer
+        /// <summary>
+        /// Called when a measure is created (i.e. when Rainmeter is launched or when a skin is refreshed). Initialize your measure object here.
+        /// </summary>
+        internal Measure()
+        {
+        }
+
+        private enum PlayerType
         {
             Status,
             Artist,
@@ -45,6 +52,10 @@ namespace Rainmeter.Plugin
 
         public static string FriendsCount { get; private set; }
 
+        /// <summary>
+        /// Called by Rainmeter when a !CommandMeasure bang is sent to the measure. 
+        /// </summary>
+        /// <param name="args">String containing the arguments to parse.</param>
         internal static void ExecuteBang(string command)
         {
             Execute.Start(command);
@@ -83,19 +94,19 @@ namespace Rainmeter.Plugin
 
                     switch (_audioType)
                     {
-                        case AudioPlayer.Status:
+                        case PlayerType.Status:
                             return "VKPlayer by Aragas (Aragasas)";
 
-                        case AudioPlayer.Artist:
+                        case PlayerType.Artist:
                             return Player.Artist ?? "Not Authorized";
 
-                        case AudioPlayer.Title:
+                        case PlayerType.Title:
                             return Player.Title ?? "Click Play";
 
-                        case AudioPlayer.NextArtist:
+                        case PlayerType.NextArtist:
                             return Player.NextArtist ?? "Not Authorized";
 
-                        case AudioPlayer.NextTitle:
+                        case PlayerType.NextTitle:
                             return Player.NextTitle ?? "Click Play";
                     }
 
@@ -106,6 +117,13 @@ namespace Rainmeter.Plugin
             return null;
         }
 
+        /// <summary>
+        ///  Called when the measure settings are to be read directly after Initialize. 
+        ///  If DynamicVariables=1 is set on the measure, Reload is called on every update cycle (usually once per second). 
+        ///  Read and store measure settings here. To set a default maximum value for the measure, assign to maxValue.
+        /// </summary>
+        /// <param name="api">Rainmeter API</param>
+        /// <param name="maxValue">Max Value</param>
         internal void Reload(RainmeterAPI rm, ref double maxValue)
         {
             Info.Update();
@@ -123,43 +141,43 @@ namespace Rainmeter.Plugin
                     switch (playertype.ToLowerInvariant())
                     {
                         case "status":
-                            _audioType = AudioPlayer.Status;
+                            _audioType = PlayerType.Status;
                             break;
 
                         case "state":
-                            _audioType = AudioPlayer.State;
+                            _audioType = PlayerType.State;
                             break;
 
                         case "artist":
-                            _audioType = AudioPlayer.Artist;
+                            _audioType = PlayerType.Artist;
                             break;
 
                         case "title":
-                            _audioType = AudioPlayer.Title;
+                            _audioType = PlayerType.Title;
                             break;
 
                         case "duration":
-                            _audioType = AudioPlayer.Duration;
+                            _audioType = PlayerType.Duration;
                             break;
 
                         case "position":
-                            _audioType = AudioPlayer.Position;
+                            _audioType = PlayerType.Position;
                             break;
 
                         case "repeat":
-                            _audioType = AudioPlayer.Repeat;
+                            _audioType = PlayerType.Repeat;
                             break;
 
                         case "shuffle":
-                            _audioType = AudioPlayer.Shuffle;
+                            _audioType = PlayerType.Shuffle;
                             break;
 
                         case "volume":
-                            _audioType = AudioPlayer.Volume;
+                            _audioType = PlayerType.Volume;
                             break;
 
                         case "progress":
-                            _audioType = AudioPlayer.Progress;
+                            _audioType = PlayerType.Progress;
                             break;
 
                         default:
@@ -216,6 +234,10 @@ namespace Rainmeter.Plugin
             }
         }
 
+        /// <summary>
+        /// Called on every update cycle (usually once per second). 
+        /// </summary>
+        /// <returns>Return the numerical value for the measure here.</returns>
         internal double Update()
         {
             switch (_type)
@@ -229,23 +251,23 @@ namespace Rainmeter.Plugin
 
                     switch (_audioType)
                     {
-                        case AudioPlayer.Duration:
+                        case PlayerType.Duration:
                             return Player.Duration;
 
-                        case AudioPlayer.Position:
+                        case PlayerType.Position:
                             return Math.Round(Player.Position);
 
-                        case AudioPlayer.State:
+                        case PlayerType.State:
                             if (Player.Played) Player.PlayNext();
                             return Player.State;
 
-                        case AudioPlayer.Repeat:
+                        case PlayerType.Repeat:
                             return Player.Repeat ? 0.0 : 1.0;
 
-                        case AudioPlayer.Shuffle:
+                        case PlayerType.Shuffle:
                             return Player.Shuffle ? 0.0 : 1.0;
 
-                        case AudioPlayer.Progress:
+                        case PlayerType.Progress:
                             return Player.Progress;
                     }
 
