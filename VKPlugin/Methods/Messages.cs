@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Xml;
 
 namespace Rainmeter.Methods
@@ -30,7 +29,7 @@ namespace Rainmeter.Methods
 
             foreach (XmlNode node in nodeListError)
             {
-                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2)) 
+                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2))
                     return 0;
             }
 
@@ -38,14 +37,12 @@ namespace Rainmeter.Methods
 
             string countstring = "0";
 
-            try
-            {
+            if (!root.HasChildNodes)
+                return Convert.ToInt32(countstring);
+
+            XmlElement xmlElement = root["messages"];
+            if (xmlElement != null)
                 countstring = root["messages"].InnerText;
-            }
-            catch
-            {
-                Debug.Write("Message Error");
-            }
 
             return Convert.ToInt32(countstring);
         }

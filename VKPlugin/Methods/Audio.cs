@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Xml;
 
 namespace Rainmeter.Methods
@@ -21,7 +20,7 @@ namespace Rainmeter.Methods
             var arr3 = new string[0];
             // Parameters.
             const string method = "audio.get.xml?";
-            string param = "owner_id=" + Id + "&count=" + AudioCount();
+            string param = "owner_id=" + Id + "&count=" + "200";
 
             // Getting document.
             var doc = new XmlDocument();
@@ -37,7 +36,7 @@ namespace Rainmeter.Methods
 
             foreach (XmlNode node in nodeListError)
             {
-                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2)) 
+                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2))
                     return null;
             }
 
@@ -65,6 +64,7 @@ namespace Rainmeter.Methods
             #endregion Filtering
         }
 
+        // Don't work.
         private string AudioCount()
         {
             // Parameters.
@@ -85,7 +85,7 @@ namespace Rainmeter.Methods
 
             foreach (XmlNode node in nodeListError)
             {
-                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2)) 
+                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2))
                     return null;
             }
 
@@ -93,14 +93,14 @@ namespace Rainmeter.Methods
 
             string countstring = "0";
 
-            try
-            {
-                countstring = root["response"].InnerText;
-            }
-            catch
-            {
-                Debug.Write("AudioCount Error");
-            }
+            //try
+            //{
+            countstring = root.InnerText;
+            //}
+            //catch
+            //{
+            //    MessageBox.Show("AudioCount Error");
+            //}
 
             return countstring;
         }

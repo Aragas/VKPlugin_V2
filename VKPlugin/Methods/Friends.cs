@@ -62,7 +62,7 @@ namespace Rainmeter.Methods
 
             foreach (XmlNode node in nodeListError)
             {
-                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2)) 
+                if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2))
                     return null;
             }
 

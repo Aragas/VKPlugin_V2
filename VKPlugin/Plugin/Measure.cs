@@ -7,6 +7,8 @@ namespace Rainmeter.Plugin
 {
     internal class Measure
     {
+        public static RainmeterAPI RM;
+        private static string _path;
         private PlayerType _audioType;
         private FriendsType _friendsType;
         private Type _type;
@@ -17,6 +19,14 @@ namespace Rainmeter.Plugin
         /// </summary>
         internal Measure()
         {
+        }
+
+        private enum FriendsType
+        {
+            Name,
+            Photo,
+            Id,
+            Status
         }
 
         private enum PlayerType
@@ -35,14 +45,6 @@ namespace Rainmeter.Plugin
             Progress
         }
 
-        private enum FriendsType
-        {
-            Name,
-            Photo,
-            Id,
-            Status
-        }
-
         private enum Type
         {
             Player,
@@ -52,8 +54,16 @@ namespace Rainmeter.Plugin
 
         public static string FriendsCount { get; private set; }
 
+        public static string Path
+        {
+            get
+            {
+                return _path;
+            }
+        }
+
         /// <summary>
-        /// Called by Rainmeter when a !CommandMeasure bang is sent to the measure. 
+        /// Called by Rainmeter when a !CommandMeasure bang is sent to the measure.
         /// </summary>
         /// <param name="args">String containing the arguments to parse.</param>
         internal static void ExecuteBang(string command)
@@ -102,12 +112,6 @@ namespace Rainmeter.Plugin
 
                         case PlayerType.Title:
                             return Player.Title ?? "Click Play";
-
-                        case PlayerType.NextArtist:
-                            return Player.NextArtist ?? "Not Authorized";
-
-                        case PlayerType.NextTitle:
-                            return Player.NextTitle ?? "Click Play";
                     }
 
                     #endregion Player
@@ -118,15 +122,27 @@ namespace Rainmeter.Plugin
         }
 
         /// <summary>
-        ///  Called when the measure settings are to be read directly after Initialize. 
-        ///  If DynamicVariables=1 is set on the measure, Reload is called on every update cycle (usually once per second). 
+        ///  Called when the measure settings are to be read directly after Initialize.
+        ///  If DynamicVariables=1 is set on the measure, Reload is called on every update cycle (usually once per second).
         ///  Read and store measure settings here. To set a default maximum value for the measure, assign to maxValue.
         /// </summary>
         /// <param name="api">Rainmeter API</param>
         /// <param name="maxValue">Max Value</param>
         internal void Reload(RainmeterAPI rm, ref double maxValue)
         {
+            RM = rm;
+
             Info.Update();
+
+            if (_path == null)
+            {
+                string path = rm.ReadPath("PlayerType", "");
+                if (path != "")
+                {
+                    string path1 = path.Replace("\\" + path.Split('\\')[7], "\\");
+                    _path = path1;
+                }
+            }
 
             string playertype = rm.ReadString("PlayerType", "");
             string friendtype = rm.ReadString("FriendType", "");
@@ -235,7 +251,7 @@ namespace Rainmeter.Plugin
         }
 
         /// <summary>
-        /// Called on every update cycle (usually once per second). 
+        /// Called on every update cycle (usually once per second).
         /// </summary>
         /// <returns>Return the numerical value for the measure here.</returns>
         internal double Update()
