@@ -1,14 +1,18 @@
-﻿namespace NAudio.Wave
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace NAudio.Wave
 {
     /// <summary>
-    ///     A wave file reader supporting cue reading
+    /// A wave file reader supporting cue reading
     /// </summary>
     public class CueWaveFileReader : WaveFileReader
     {
-        private CueList cues;
+        private CueList cues = null;
 
         /// <summary>
-        ///     Loads a wavefile and supports reading cues
+        /// Loads a wavefile and supports reading cues
         /// </summary>
         /// <param name="fileName"></param>
         public CueWaveFileReader(string fileName)
@@ -17,7 +21,7 @@
         }
 
         /// <summary>
-        ///     Cue List (can be null if cues not present)
+        /// Cue List (can be null if cues not present)
         /// </summary>
         public CueList Cues
         {

@@ -1,8 +1,11 @@
-﻿using NAudio.Utils;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using NAudio.Utils;
 
 namespace NAudio.Wave.SampleProviders
 {
-    internal class Mono24SampleChunkConverter : ISampleChunkConverter
+    class Mono24SampleChunkConverter : ISampleChunkConverter
     {
         private int offset;
         private byte[] sourceBuffer;
@@ -11,14 +14,14 @@ namespace NAudio.Wave.SampleProviders
         public bool Supports(WaveFormat waveFormat)
         {
             return waveFormat.Encoding == WaveFormatEncoding.Pcm &&
-                   waveFormat.BitsPerSample == 24 &&
-                   waveFormat.Channels == 1;
+                waveFormat.BitsPerSample == 24 &&
+                waveFormat.Channels == 1;
         }
 
         public void LoadNextChunk(IWaveProvider source, int samplePairsRequired)
         {
-            int sourceBytesRequired = samplePairsRequired*3;
-            sourceBuffer = BufferHelpers.Ensure(sourceBuffer, sourceBytesRequired);
+            int sourceBytesRequired = samplePairsRequired * 3;
+            sourceBuffer = BufferHelpers.Ensure(sourceBuffer,sourceBytesRequired);
             sourceBytes = source.Read(sourceBuffer, 0, sourceBytesRequired);
             offset = 0;
         }
@@ -27,15 +30,17 @@ namespace NAudio.Wave.SampleProviders
         {
             if (offset < sourceBytes)
             {
-                sampleLeft = (((sbyte) sourceBuffer[offset + 2] << 16) | (sourceBuffer[offset + 1] << 8) |
-                              sourceBuffer[offset])/8388608f;
+                sampleLeft = (((sbyte)sourceBuffer[offset + 2] << 16) | (sourceBuffer[offset + 1] << 8) | sourceBuffer[offset]) / 8388608f;
                 offset += 3;
                 sampleRight = sampleLeft;
                 return true;
             }
-            sampleLeft = 0.0f;
-            sampleRight = 0.0f;
-            return false;
+            else
+            {
+                sampleLeft = 0.0f;
+                sampleRight = 0.0f;
+                return false;
+            }
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace NAudio.Wave
 {
     /// <summary>
-    ///     Helper class allowing us to modify the volume of a 16 bit stream without converting to IEEE float
+    /// Helper class allowing us to modify the volume of a 16 bit stream without converting to IEEE float
     /// </summary>
     public class VolumeWaveProvider16 : IWaveProvider
     {
@@ -11,12 +13,12 @@ namespace NAudio.Wave
         private float volume;
 
         /// <summary>
-        ///     Constructs a new VolumeWaveProvider16
+        /// Constructs a new VolumeWaveProvider16
         /// </summary>
         /// <param name="sourceProvider">Source provider, must be 16 bit PCM</param>
         public VolumeWaveProvider16(IWaveProvider sourceProvider)
         {
-            Volume = 1.0f;
+            this.Volume = 1.0f;
             this.sourceProvider = sourceProvider;
             if (sourceProvider.WaveFormat.Encoding != WaveFormatEncoding.Pcm)
                 throw new ArgumentException("Expecting PCM input");
@@ -25,8 +27,8 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        ///     Gets or sets volume.
-        ///     1.0 is full scale, 0.0 is silence, anything over 1.0 will amplify but potentially clip
+        /// Gets or sets volume. 
+        /// 1.0 is full scale, 0.0 is silence, anything over 1.0 will amplify but potentially clip
         /// </summary>
         public float Volume
         {
@@ -35,7 +37,7 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        ///     WaveFormat of this WaveProvider
+        /// WaveFormat of this WaveProvider
         /// </summary>
         public WaveFormat WaveFormat
         {
@@ -43,7 +45,7 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        ///     Read bytes from this WaveProvider
+        /// Read bytes from this WaveProvider
         /// </summary>
         /// <param name="buffer">Buffer to read into</param>
         /// <param name="offset">Offset within buffer to read to</param>
@@ -53,29 +55,29 @@ namespace NAudio.Wave
         {
             // always read from the source
             int bytesRead = sourceProvider.Read(buffer, offset, count);
-            if (volume == 0.0f)
+            if (this.volume == 0.0f)
             {
                 for (int n = 0; n < bytesRead; n++)
                 {
                     buffer[offset++] = 0;
                 }
             }
-            else if (volume != 1.0f)
+            else if (this.volume != 1.0f)
             {
                 for (int n = 0; n < bytesRead; n += 2)
                 {
-                    var sample = (short) ((buffer[offset + 1] << 8) | buffer[offset]);
-                    float newSample = sample*volume;
-                    sample = (short) newSample;
+                    short sample = (short)((buffer[offset + 1] << 8) | buffer[offset]);
+                    var newSample = sample * this.volume;
+                    sample = (short)newSample;
                     // clip if necessary
-                    if (Volume > 1.0f)
+                    if (this.Volume > 1.0f)
                     {
                         if (newSample > Int16.MaxValue) sample = Int16.MaxValue;
                         else if (newSample < Int16.MinValue) sample = Int16.MinValue;
                     }
 
-                    buffer[offset++] = (byte) (sample & 0xFF);
-                    buffer[offset++] = (byte) (sample >> 8);
+                    buffer[offset++] = (byte)(sample & 0xFF);
+                    buffer[offset++] = (byte)(sample >> 8);
                 }
             }
             return bytesRead;

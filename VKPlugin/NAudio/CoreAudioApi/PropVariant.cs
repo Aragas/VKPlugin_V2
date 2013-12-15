@@ -20,49 +20,50 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 // adapted for use in NAudio
-
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Runtime.InteropServices;
-using FILETIME = System.Runtime.InteropServices.ComTypes.FILETIME;
 
 namespace NAudio.CoreAudioApi.Interfaces
 {
     /// <summary>
-    ///     from Propidl.h.
-    ///     http://msdn.microsoft.com/en-us/library/aa380072(VS.85).aspx
-    ///     contains a union so we have to do an explicit layout
+    /// from Propidl.h.
+    /// http://msdn.microsoft.com/en-us/library/aa380072(VS.85).aspx
+    /// contains a union so we have to do an explicit layout
     /// </summary>
     [StructLayout(LayoutKind.Explicit)]
     public struct PropVariant
     {
-        [FieldOffset(0)] private readonly short vt;
-        [FieldOffset(2)] private readonly short wReserved1;
-        [FieldOffset(4)] private readonly short wReserved2;
-        [FieldOffset(6)] private readonly short wReserved3;
-        [FieldOffset(8)] private readonly sbyte cVal;
-        [FieldOffset(8)] private readonly byte bVal;
-        [FieldOffset(8)] private readonly short iVal;
-        [FieldOffset(8)] private readonly ushort uiVal;
-        [FieldOffset(8)] private readonly int lVal;
-        [FieldOffset(8)] private readonly uint ulVal;
-        [FieldOffset(8)] private readonly int intVal;
-        [FieldOffset(8)] private readonly uint uintVal;
-        [FieldOffset(8)] private readonly long hVal;
-        [FieldOffset(8)] private readonly long uhVal;
-        [FieldOffset(8)] private readonly float fltVal;
-        [FieldOffset(8)] private readonly double dblVal;
-        [FieldOffset(8)] private readonly bool boolVal;
-        [FieldOffset(8)] private readonly int scode;
+        [FieldOffset(0)] private short vt;
+        [FieldOffset(2)] private short wReserved1;
+        [FieldOffset(4)] private short wReserved2;
+        [FieldOffset(6)] private short wReserved3;
+        [FieldOffset(8)] private sbyte cVal;
+        [FieldOffset(8)] private byte bVal;
+        [FieldOffset(8)] private short iVal;
+        [FieldOffset(8)] private ushort uiVal;
+        [FieldOffset(8)] private int lVal;
+        [FieldOffset(8)] private uint ulVal;
+        [FieldOffset(8)] private int intVal;
+        [FieldOffset(8)] private uint uintVal;
+        [FieldOffset(8)] private long hVal;
+        [FieldOffset(8)] private long uhVal;
+        [FieldOffset(8)] private float fltVal;
+        [FieldOffset(8)] private double dblVal;
+        [FieldOffset(8)] private bool boolVal;
+        [FieldOffset(8)] private int scode;
         //CY cyVal;
-        [FieldOffset(8)] private readonly DateTime date;
-        [FieldOffset(8)] private readonly FILETIME filetime;
+        [FieldOffset(8)] private DateTime date;
+        [FieldOffset(8)] private System.Runtime.InteropServices.ComTypes.FILETIME filetime;
         //CLSID* puuid;
         //CLIPDATA* pclipdata;
         //BSTR bstrVal;
         //BSTRBLOB bstrblobVal;
         [FieldOffset(8)] private Blob blobVal;
         //LPSTR pszVal;
-        [FieldOffset(8)] private readonly IntPtr pwszVal; //LPWSTR 
+        [FieldOffset(8)] private IntPtr pointerValue; //LPWSTR 
         //IUnknown* punkVal;
         /*IDispatch* pdispVal;
         IStream* pStream;
@@ -114,23 +115,61 @@ namespace NAudio.CoreAudioApi.Interfaces
         */
 
         /// <summary>
-        ///     Helper method to gets blob data
+        /// Creates a new PropVariant containing a long value
         /// </summary>
-        private byte[] GetBlob()
+        public static PropVariant FromLong(long value)
         {
-            var Result = new byte[blobVal.Length];
-            Marshal.Copy(blobVal.Data, Result, 0, Result.Length);
-            return Result;
+            return new PropVariant() {vt = (short) VarEnum.VT_I8, hVal = value};
         }
 
         /// <summary>
-        ///     Property value
+        /// Helper method to gets blob data
+        /// </summary>
+        private byte[] GetBlob()
+        {
+            var blob = new byte[blobVal.Length];
+            Marshal.Copy(blobVal.Data, blob, 0, blob.Length);
+            return blob;
+        }
+
+        /// <summary>
+        /// Interprets a blob as an array of structs
+        /// </summary>
+        public T[] GetBlobAsArrayOf<T>()
+        {
+            var blobByteLength = blobVal.Length;
+            var singleInstance = (T) Activator.CreateInstance(typeof (T));
+            var structSize = Marshal.SizeOf(singleInstance);
+            if (blobByteLength%structSize != 0)
+            {
+                throw new InvalidDataException(String.Format("Blob size {0} not a multiple of struct size {1}", blobByteLength, structSize));
+            }
+            var items = blobByteLength/structSize;
+            var array = new T[items];
+            for (int n = 0; n < items; n++)
+            {
+                array[n] = (T) Activator.CreateInstance(typeof (T));
+                Marshal.PtrToStructure(new IntPtr((long) blobVal.Data + n*structSize), array[n]);
+            }
+            return array;
+        }
+
+        /// <summary>
+        /// Gets the type of data in this PropVariant
+        /// </summary>
+        public VarEnum DataType
+        {
+            get { return (VarEnum) vt; }
+        }
+
+    /// <summary>
+        /// Property value
         /// </summary>
         public object Value
         {
             get
             {
-                var ve = (VarEnum) vt;
+                VarEnum ve = DataType;
                 switch (ve)
                 {
                     case VarEnum.VT_I1:
@@ -145,13 +184,29 @@ namespace NAudio.CoreAudioApi.Interfaces
                         return iVal;
                     case VarEnum.VT_UI4:
                         return ulVal;
+                    case VarEnum.VT_UI8:
+                        return uhVal;
                     case VarEnum.VT_LPWSTR:
-                        return Marshal.PtrToStringUni(pwszVal);
+                        return Marshal.PtrToStringUni(pointerValue);
                     case VarEnum.VT_BLOB:
+                    case VarEnum.VT_VECTOR | VarEnum.VT_UI1:
                         return GetBlob();
+                    case VarEnum.VT_CLSID:
+                        return (Guid)Marshal.PtrToStructure(pointerValue, typeof(Guid));
                 }
-                throw new NotImplementedException("PropVariant " + ve);
+                throw new NotImplementedException("PropVariant " + ve.ToString());
             }
         }
+
+        /// <summary>
+        /// allows freeing up memory, might turn this into a Dispose method?
+        /// </summary>
+        public void Clear()
+        {
+            PropVariantClear(ref this);
+        }
+
+        [DllImport("ole32.dll")]
+        private static extern int PropVariantClear(ref PropVariant pvar);
     }
 }

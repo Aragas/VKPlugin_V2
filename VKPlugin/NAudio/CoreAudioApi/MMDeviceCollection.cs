@@ -20,53 +20,23 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 // updated for NAudio
-
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Runtime.InteropServices;
 using NAudio.CoreAudioApi.Interfaces;
 
 namespace NAudio.CoreAudioApi
 {
     /// <summary>
-    ///     Multimedia Device Collection
+    /// Multimedia Device Collection
     /// </summary>
     public class MMDeviceCollection : IEnumerable<MMDevice>
     {
-        private readonly IMMDeviceCollection _MMDeviceCollection;
-
-        internal MMDeviceCollection(IMMDeviceCollection parent)
-        {
-            _MMDeviceCollection = parent;
-        }
-
-        #region IEnumerable<MMDevice> Members
+        private IMMDeviceCollection _MMDeviceCollection;
 
         /// <summary>
-        ///     Get Enumerator
-        /// </summary>
-        /// <returns>Device enumerator</returns>
-        public IEnumerator<MMDevice> GetEnumerator()
-        {
-            for (int index = 0; index < Count; index++)
-            {
-                yield return this[index];
-            }
-        }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        #endregion
-
-        /// <summary>
-        ///     Device count
+        /// Device count
         /// </summary>
         public int Count
         {
@@ -79,7 +49,7 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        ///     Get device by index
+        /// Get device by index
         /// </summary>
         /// <param name="index">Device index</param>
         /// <returns>Device at the specified index</returns>
@@ -92,5 +62,35 @@ namespace NAudio.CoreAudioApi
                 return new MMDevice(result);
             }
         }
+
+        internal MMDeviceCollection(IMMDeviceCollection parent)
+        {
+            _MMDeviceCollection = parent;
+        }
+
+        #region IEnumerable<MMDevice> Members
+
+        /// <summary>
+        /// Get Enumerator
+        /// </summary>
+        /// <returns>Device enumerator</returns>
+        public IEnumerator<MMDevice> GetEnumerator()
+        {            
+            for (int index = 0; index < Count; index++)
+            {
+                yield return this[index];
+            }
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
     }
 }

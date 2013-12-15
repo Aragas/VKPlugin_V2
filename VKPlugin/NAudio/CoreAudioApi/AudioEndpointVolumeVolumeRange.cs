@@ -20,48 +20,59 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 // modified for NAudio
-
-using System.Runtime.InteropServices;
+using System;
+using System.Collections.Generic;
+using System.Text;
 using NAudio.CoreAudioApi.Interfaces;
+using System.Runtime.InteropServices;
 
 namespace NAudio.CoreAudioApi
 {
     /// <summary>
-    ///     Audio Endpoint Volume Volume Range
+    /// Audio Endpoint Volume Volume Range
     /// </summary>
     public class AudioEndpointVolumeVolumeRange
     {
-        private readonly float _VolumeIncrementdB;
-        private readonly float _VolumeMaxdB;
-        private readonly float _VolumeMindB;
+        float _VolumeMindB;
+        float _VolumeMaxdB;
+        float _VolumeIncrementdB;
 
         internal AudioEndpointVolumeVolumeRange(IAudioEndpointVolume parent)
         {
-            Marshal.ThrowExceptionForHR(parent.GetVolumeRange(out _VolumeMindB, out _VolumeMaxdB, out _VolumeIncrementdB));
+            Marshal.ThrowExceptionForHR(parent.GetVolumeRange(out _VolumeMindB,out _VolumeMaxdB,out _VolumeIncrementdB));
         }
 
         /// <summary>
-        ///     Minimum Decibels
+        /// Minimum Decibels
         /// </summary>
         public float MinDecibels
         {
-            get { return _VolumeMindB; }
+            get
+            {
+                return _VolumeMindB;
+            }
         }
 
         /// <summary>
-        ///     Maximum Decibels
+        /// Maximum Decibels
         /// </summary>
         public float MaxDecibels
         {
-            get { return _VolumeMaxdB; }
+            get
+            {
+                return _VolumeMaxdB;
+            }
         }
 
         /// <summary>
-        ///     Increment Decibels
+        /// Increment Decibels
         /// </summary>
         public float IncrementDecibels
         {
-            get { return _VolumeIncrementdB; }
+            get
+            {
+                return _VolumeIncrementdB;
+            }
         }
     }
 }

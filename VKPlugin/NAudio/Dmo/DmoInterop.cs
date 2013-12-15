@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace NAudio.Dmo
 {
-    internal static class DmoInterop
+    static class DmoInterop
     {
         [DllImport("msdmo.dll")]
         public static extern int DMOEnum(
@@ -22,7 +23,7 @@ namespace NAudio.Dmo
 
         [DllImport("msdmo.dll")]
         public static extern int MoInitMediaType(
-            [In, Out] ref DmoMediaType mediaType, int formatBlockBytes);
+            [In,Out] ref DmoMediaType mediaType, int formatBlockBytes);
 
         [DllImport("msdmo.dll")]
         public static extern int DMOGetName([In] ref Guid clsidDMO,

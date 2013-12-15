@@ -20,15 +20,17 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 // Adapted for NAudio
-
 using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Runtime.InteropServices;
 
 namespace NAudio.CoreAudioApi.Interfaces
 {
     internal struct Blob
     {
-        public IntPtr Data;
         public int Length;
+        public IntPtr Data;
 
         //Code Should Compile at warning level4 without any warnings, 
         //However this struct will give us Warning CS0649: Field [Fieldname] 
@@ -44,3 +46,4 @@ namespace NAudio.CoreAudioApi.Interfaces
         }
     }
 }
+

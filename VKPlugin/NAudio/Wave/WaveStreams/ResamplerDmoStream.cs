@@ -1,33 +1,35 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.Text;
 using NAudio.Dmo;
+using System.Diagnostics;
 
 namespace NAudio.Wave
 {
     /// <summary>
-    ///     Wave Stream for converting between sample rates
+    /// Wave Stream for converting between sample rates
     /// </summary>
     public class ResamplerDmoStream : WaveStream
     {
         private readonly IWaveProvider inputProvider;
         private readonly WaveStream inputStream;
         private readonly WaveFormat outputFormat;
-        private MediaBuffer inputMediaBuffer;
         private DmoOutputDataBuffer outputBuffer;
-        private long position;
         private Resampler resampler;
+        private MediaBuffer inputMediaBuffer;
+        private long position;
 
         /// <summary>
-        ///     WaveStream to resample using the DMO Resampler
+        /// WaveStream to resample using the DMO Resampler
         /// </summary>
         /// <param name="inputProvider">Input Stream</param>
         /// <param name="outputFormat">Desired Output Format</param>
         public ResamplerDmoStream(IWaveProvider inputProvider, WaveFormat outputFormat)
         {
             this.inputProvider = inputProvider;
-            inputStream = inputProvider as WaveStream;
+            this.inputStream = inputProvider as WaveStream;
             this.outputFormat = outputFormat;
-            resampler = new Resampler();
+            this.resampler = new Resampler();
             if (!resampler.MediaObject.SupportsInputWaveFormat(0, inputProvider.WaveFormat))
             {
                 throw new ArgumentException("Unsupported Input Stream format", "inputStream");
@@ -38,83 +40,86 @@ namespace NAudio.Wave
             {
                 throw new ArgumentException("Unsupported Output Stream format", "outputStream");
             }
-
+         
             resampler.MediaObject.SetOutputWaveFormat(0, outputFormat);
             if (inputStream != null)
             {
                 position = InputToOutputPosition(inputStream.Position);
             }
-            inputMediaBuffer = new MediaBuffer(inputProvider.WaveFormat.AverageBytesPerSecond);
-            outputBuffer = new DmoOutputDataBuffer(outputFormat.AverageBytesPerSecond);
+            this.inputMediaBuffer = new MediaBuffer(inputProvider.WaveFormat.AverageBytesPerSecond);
+            this.outputBuffer = new DmoOutputDataBuffer(outputFormat.AverageBytesPerSecond);
         }
 
         /// <summary>
-        ///     Stream Wave Format
+        /// Stream Wave Format
         /// </summary>
         public override WaveFormat WaveFormat
         {
             get { return outputFormat; }
         }
 
-        /// <summary>
-        ///     Stream length in bytes
-        /// </summary>
-        public override long Length
-        {
-            get
-            {
-                if (inputStream == null)
-                {
-                    throw new InvalidOperationException("Cannot report length if the input was an IWaveProvider");
-                }
-                return InputToOutputPosition(inputStream.Length);
-            }
-        }
-
-        /// <summary>
-        ///     Stream position in bytes
-        /// </summary>
-        public override long Position
-        {
-            get { return position; }
-            set
-            {
-                if (inputStream == null)
-                {
-                    throw new InvalidOperationException("Cannot set position if the input was not a WaveStream");
-                }
-                inputStream.Position = OutputToInputPosition(value);
-                position = InputToOutputPosition(inputStream.Position);
-                resampler.MediaObject.Discontinuity(0);
-            }
-        }
-
         private long InputToOutputPosition(long inputPosition)
         {
-            double ratio = (double) outputFormat.AverageBytesPerSecond
-                           /inputProvider.WaveFormat.AverageBytesPerSecond;
-            var outputPosition = (long) (inputPosition*ratio);
-            if (outputPosition%outputFormat.BlockAlign != 0)
+            double ratio = (double)outputFormat.AverageBytesPerSecond
+                / inputProvider.WaveFormat.AverageBytesPerSecond;
+            long outputPosition = (long)(inputPosition * ratio);
+            if (outputPosition % outputFormat.BlockAlign != 0)
             {
-                outputPosition -= outputPosition%outputFormat.BlockAlign;
+                outputPosition -= outputPosition % outputFormat.BlockAlign;
             }
             return outputPosition;
         }
 
         private long OutputToInputPosition(long outputPosition)
         {
-            double ratio = (double) outputFormat.AverageBytesPerSecond
-                           /inputProvider.WaveFormat.AverageBytesPerSecond;
-            var inputPosition = (long) (outputPosition/ratio);
-            if (inputPosition%inputProvider.WaveFormat.BlockAlign != 0)
+            double ratio = (double)outputFormat.AverageBytesPerSecond
+                / inputProvider.WaveFormat.AverageBytesPerSecond;
+            long inputPosition = (long)(outputPosition / ratio);
+            if (inputPosition % inputProvider.WaveFormat.BlockAlign != 0)
             {
-                inputPosition -= inputPosition%inputProvider.WaveFormat.BlockAlign;
+                inputPosition -= inputPosition % inputProvider.WaveFormat.BlockAlign;
             }
             return inputPosition;
         }
 
         /// <summary>
-        ///     Reads data from input stream
+        /// Stream length in bytes
+        /// </summary>
+        public override long Length
+        {
+            get 
+            {
+                if (this.inputStream == null)
+                {
+                    throw new InvalidOperationException("Cannot report length if the input was an IWaveProvider");
+                }
+                return InputToOutputPosition(inputStream.Length); 
+            }
+        }
+
+        /// <summary>
+        /// Stream position in bytes
+        /// </summary>
+        public override long Position
+        {
+            get
+            {
+                return position;
+            }
+            set
+            {
+                if (this.inputStream == null)
+                {
+                    throw new InvalidOperationException("Cannot set position if the input was not a WaveStream");
+                }                
+                inputStream.Position = OutputToInputPosition(value);
+                position = InputToOutputPosition(inputStream.Position);
+                resampler.MediaObject.Discontinuity(0);
+            }
+        }
+
+        /// <summary>
+        /// Reads data from input stream
         /// </summary>
         /// <param name="buffer">buffer</param>
         /// <param name="offset">offset into buffer</param>
@@ -129,8 +134,8 @@ namespace NAudio.Wave
                 if (resampler.MediaObject.IsAcceptingData(0))
                 {
                     // 1. Read from the input stream 
-                    var inputBytesRequired = (int) OutputToInputPosition(count - outputBytesProvided);
-                    var inputByteArray = new byte[inputBytesRequired];
+                    int inputBytesRequired = (int)OutputToInputPosition(count - outputBytesProvided);
+                    byte[] inputByteArray = new byte[inputBytesRequired];
                     int inputBytesRead = inputProvider.Read(inputByteArray, 0, inputBytesRequired);
                     if (inputBytesRead == 0)
                     {
@@ -147,7 +152,7 @@ namespace NAudio.Wave
                     outputBuffer.StatusFlags = DmoOutputDataBufferFlags.None;
 
                     // 4. Now ask the DMO for some output data
-                    resampler.MediaObject.ProcessOutput(DmoProcessOutputFlags.None, 1, new[] {outputBuffer});
+                    resampler.MediaObject.ProcessOutput(DmoProcessOutputFlags.None, 1, new DmoOutputDataBuffer[] { outputBuffer });
 
                     if (outputBuffer.Length == 0)
                     {
@@ -166,13 +171,13 @@ namespace NAudio.Wave
                     Debug.Assert(false, "have not implemented not accepting logic yet");
                 }
             }
-
+            
             position += outputBytesProvided;
             return outputBytesProvided;
         }
 
         /// <summary>
-        ///     Dispose
+        /// Dispose
         /// </summary>
         /// <param name="disposing">True if disposing (not from finalizer)</param>
         protected override void Dispose(bool disposing)

@@ -4,18 +4,18 @@ using System.Diagnostics;
 namespace NAudio.Utils
 {
     /// <summary>
-    ///     A very basic circular buffer implementation
+    /// A very basic circular buffer implementation
     /// </summary>
     public class CircularBuffer
     {
         private readonly byte[] buffer;
         private readonly object lockObject;
-        private int byteCount;
-        private int readPosition;
         private int writePosition;
+        private int readPosition;
+        private int byteCount;
 
         /// <summary>
-        ///     Create a new circular buffer
+        /// Create a new circular buffer
         /// </summary>
         /// <param name="size">Max buffer size in bytes</param>
         public CircularBuffer(int size)
@@ -25,23 +25,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Maximum length of this circular buffer
-        /// </summary>
-        public int MaxLength
-        {
-            get { return buffer.Length; }
-        }
-
-        /// <summary>
-        ///     Number of bytes currently stored in the circular buffer
-        /// </summary>
-        public int Count
-        {
-            get { return byteCount; }
-        }
-
-        /// <summary>
-        ///     Write data to the buffer
+        /// Write data to the buffer
         /// </summary>
         /// <param name="data">Data to write</param>
         /// <param name="offset">Offset into data</param>
@@ -51,11 +35,10 @@ namespace NAudio.Utils
         {
             lock (lockObject)
             {
-                int bytesWritten = 0;
+                var bytesWritten = 0;
                 if (count > buffer.Length - byteCount)
                 {
                     count = buffer.Length - byteCount;
-                    //throw new ArgumentException("Not enough space in buffer");
                 }
                 // write to end
                 int writeToEnd = Math.Min(buffer.Length - writePosition, count);
@@ -77,7 +60,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Read from the buffer
+        /// Read from the buffer
         /// </summary>
         /// <param name="data">Buffer to read into</param>
         /// <param name="offset">Offset into read buffer</param>
@@ -114,7 +97,23 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Resets the buffer
+        /// Maximum length of this circular buffer
+        /// </summary>
+        public int MaxLength
+        {
+            get { return buffer.Length; }
+        }
+
+        /// <summary>
+        /// Number of bytes currently stored in the circular buffer
+        /// </summary>
+        public int Count
+        {
+            get { return byteCount; }
+        }
+
+        /// <summary>
+        /// Resets the buffer
         /// </summary>
         public void Reset()
         {
@@ -124,7 +123,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Advances the buffer, discarding bytes
+        /// Advances the buffer, discarding bytes
         /// </summary>
         /// <param name="count">Bytes to advance</param>
         public void Advance(int count)

@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Runtime.InteropServices;
 using NAudio.CoreAudioApi.Interfaces;
+using NAudio.Utils;
 
 namespace NAudio.CoreAudioApi
 {
     /// <summary>
-    ///     Audio Capture Client
+    /// Audio Capture Client
     /// </summary>
     public class AudioCaptureClient : IDisposable
     {
-        private IAudioCaptureClient audioCaptureClientInterface;
+        IAudioCaptureClient audioCaptureClientInterface;
 
         internal AudioCaptureClient(IAudioCaptureClient audioCaptureClientInterface)
         {
@@ -17,7 +20,7 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        ///     Gets a pointer to the buffer
+        /// Gets a pointer to the buffer
         /// </summary>
         /// <returns>Pointer to the buffer</returns>
         public IntPtr GetBuffer(
@@ -27,13 +30,12 @@ namespace NAudio.CoreAudioApi
             out long qpcPosition)
         {
             IntPtr bufferPointer;
-            Marshal.ThrowExceptionForHR(audioCaptureClientInterface.GetBuffer(out bufferPointer, out numFramesToRead,
-                out bufferFlags, out devicePosition, out qpcPosition));
+            Marshal.ThrowExceptionForHR(audioCaptureClientInterface.GetBuffer(out bufferPointer, out numFramesToRead, out bufferFlags, out devicePosition, out qpcPosition));
             return bufferPointer;
         }
 
         /// <summary>
-        ///     Gets a pointer to the buffer
+        /// Gets a pointer to the buffer
         /// </summary>
         /// <param name="numFramesToRead">Number of frames to read</param>
         /// <param name="bufferFlags">Buffer flags</param>
@@ -45,13 +47,12 @@ namespace NAudio.CoreAudioApi
             IntPtr bufferPointer;
             long devicePosition;
             long qpcPosition;
-            Marshal.ThrowExceptionForHR(audioCaptureClientInterface.GetBuffer(out bufferPointer, out numFramesToRead,
-                out bufferFlags, out devicePosition, out qpcPosition));
+            Marshal.ThrowExceptionForHR(audioCaptureClientInterface.GetBuffer(out bufferPointer, out numFramesToRead, out bufferFlags, out devicePosition, out qpcPosition));
             return bufferPointer;
         }
 
         /// <summary>
-        ///     Gets the size of the next packet
+        /// Gets the size of the next packet
         /// </summary>
         public int GetNextPacketSize()
         {
@@ -61,7 +62,7 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        ///     Release buffer
+        /// Release buffer
         /// </summary>
         /// <param name="numFramesWritten">Number of frames written</param>
         public void ReleaseBuffer(int numFramesWritten)
@@ -72,7 +73,7 @@ namespace NAudio.CoreAudioApi
         #region IDisposable Members
 
         /// <summary>
-        ///     Release the COM object
+        /// Release the COM object
         /// </summary>
         public void Dispose()
         {

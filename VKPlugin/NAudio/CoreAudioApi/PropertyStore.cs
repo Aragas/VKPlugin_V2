@@ -20,30 +20,23 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 // this version modified for NAudio from Ray Molenkamp's original
-
+using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Runtime.InteropServices;
 using NAudio.CoreAudioApi.Interfaces;
 
 namespace NAudio.CoreAudioApi
 {
     /// <summary>
-    ///     Property Store class, only supports reading properties at the moment.
+    /// Property Store class, only supports reading properties at the moment.
     /// </summary>
     public class PropertyStore
     {
-        private readonly IPropertyStore storeInterface;
+        private IPropertyStore storeInterface;
 
         /// <summary>
-        ///     Creates a new property store
-        /// </summary>
-        /// <param name="store">IPropertyStore COM interface</param>
-        internal PropertyStore(IPropertyStore store)
-        {
-            storeInterface = store;
-        }
-
-        /// <summary>
-        ///     Property Count
+        /// Property Count
         /// </summary>
         public int Count
         {
@@ -56,7 +49,7 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        ///     Gets property by index
+        /// Gets property by index
         /// </summary>
         /// <param name="index">Property index</param>
         /// <returns>The property</returns>
@@ -72,7 +65,25 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        ///     Indexer by guid
+        /// Contains property guid
+        /// </summary>
+        /// <param name="key">Looks for a specific key</param>
+        /// <returns>True if found</returns>
+        public bool Contains(PropertyKey key)
+        {
+            for (int i = 0; i < Count; i++)
+            {
+                PropertyKey ikey = Get(i);
+                if ((ikey.formatId == key.formatId) && (ikey.propertyId == key.propertyId))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Indexer by guid
         /// </summary>
         /// <param name="key">Property Key</param>
         /// <returns>Property or null if not found</returns>
@@ -95,25 +106,7 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        ///     Contains property guid
-        /// </summary>
-        /// <param name="key">Looks for a specific key</param>
-        /// <returns>True if found</returns>
-        public bool Contains(PropertyKey key)
-        {
-            for (int i = 0; i < Count; i++)
-            {
-                PropertyKey ikey = Get(i);
-                if ((ikey.formatId == key.formatId) && (ikey.propertyId == key.propertyId))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        ///     Gets property key at sepecified index
+        /// Gets property key at sepecified index
         /// </summary>
         /// <param name="index">Index</param>
         /// <returns>Property key</returns>
@@ -125,7 +118,7 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        ///     Gets property value at specified index
+        /// Gets property value at specified index
         /// </summary>
         /// <param name="index">Index</param>
         /// <returns>Property value</returns>
@@ -136,5 +129,15 @@ namespace NAudio.CoreAudioApi
             Marshal.ThrowExceptionForHR(storeInterface.GetValue(ref key, out result));
             return result;
         }
+
+        /// <summary>
+        /// Creates a new property store
+        /// </summary>
+        /// <param name="store">IPropertyStore COM interface</param>
+        internal PropertyStore(IPropertyStore store)
+        {
+            this.storeInterface = store;
+        }
     }
 }
+

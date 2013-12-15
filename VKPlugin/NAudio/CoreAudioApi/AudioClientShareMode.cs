@@ -1,17 +1,20 @@
-﻿namespace NAudio.CoreAudioApi
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace NAudio.CoreAudioApi
 {
     /// <summary>
-    ///     AUDCLNT_SHAREMODE
+    /// AUDCLNT_SHAREMODE
     /// </summary>
     public enum AudioClientShareMode
     {
         /// <summary>
-        ///     AUDCLNT_SHAREMODE_SHARED,
+        /// AUDCLNT_SHAREMODE_SHARED,
         /// </summary>
         Shared,
-
         /// <summary>
-        ///     AUDCLNT_SHAREMODE_EXCLUSIVE
+        /// AUDCLNT_SHAREMODE_EXCLUSIVE
         /// </summary>
         Exclusive,
     }

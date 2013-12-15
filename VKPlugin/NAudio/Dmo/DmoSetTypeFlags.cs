@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace NAudio.Dmo
 {
     [Flags]
-    internal enum DmoSetTypeFlags
+    enum DmoSetTypeFlags
     {
         None,
         DMO_SET_TYPEF_TEST_ONLY = 0x00000001,

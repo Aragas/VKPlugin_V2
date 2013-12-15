@@ -1,13 +1,17 @@
-﻿namespace NAudio.Wave.SampleProviders
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace NAudio.Wave.SampleProviders
 {
     /// <summary>
-    ///     Converts an IWaveProvider containing 8 bit PCM to an
-    ///     ISampleProvider
+    /// Converts an IWaveProvider containing 8 bit PCM to an
+    /// ISampleProvider
     /// </summary>
     public class Pcm8BitToSampleProvider : SampleProviderConverterBase
     {
         /// <summary>
-        ///     Initialises a new instance of Pcm8BitToSampleProvider
+        /// Initialises a new instance of Pcm8BitToSampleProvider
         /// </summary>
         /// <param name="source">Source wave provider</param>
         public Pcm8BitToSampleProvider(IWaveProvider source) :
@@ -16,7 +20,7 @@
         }
 
         /// <summary>
-        ///     Reads samples from this sample provider
+        /// Reads samples from this sample provider
         /// </summary>
         /// <param name="buffer">Sample buffer</param>
         /// <param name="offset">Offset into sample buffer</param>
@@ -30,7 +34,7 @@
             int outIndex = offset;
             for (int n = 0; n < bytesRead; n++)
             {
-                buffer[outIndex++] = sourceBuffer[n]/128f - 1.0f;
+                buffer[outIndex++] = sourceBuffer[n] / 128f - 1.0f;
             }
             return bytesRead;
         }

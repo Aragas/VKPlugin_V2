@@ -1,27 +1,30 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Text;
 using NAudio.Wave;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace NAudio.Dmo
 {
     /// <summary>
-    ///     http://msdn.microsoft.com/en-us/library/aa929922.aspx
-    ///     DMO_MEDIA_TYPE
+    /// http://msdn.microsoft.com/en-us/library/aa929922.aspx
+    /// DMO_MEDIA_TYPE 
     /// </summary>
     public struct DmoMediaType
     {
-        private bool bFixedSizeSamples;
-        private bool bTemporalCompression;
-        private int cbFormat;
-        private Guid formattype;
-        private int lSampleSize;
-        private Guid majortype;
-        private IntPtr pUnk; // not used
-        private IntPtr pbFormat;
-        private Guid subtype;
-
+        Guid majortype;
+        Guid subtype;
+        bool bFixedSizeSamples;
+        bool bTemporalCompression;
+        int lSampleSize;
+        Guid formattype;
+        IntPtr pUnk; // not used
+        int cbFormat;
+        IntPtr pbFormat; 
+        
         /// <summary>
-        ///     Major type
+        /// Major type
         /// </summary>
         public Guid MajorType
         {
@@ -29,7 +32,7 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        ///     Major type name
+        /// Major type name
         /// </summary>
         public string MajorTypeName
         {
@@ -37,7 +40,7 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        ///     Subtype
+        /// Subtype
         /// </summary>
         public Guid SubType
         {
@@ -45,7 +48,7 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        ///     Subtype name
+        /// Subtype name
         /// </summary>
         public string SubTypeName
         {
@@ -60,7 +63,7 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        ///     Fixed size samples
+        /// Fixed size samples
         /// </summary>
         public bool FixedSizeSamples
         {
@@ -68,7 +71,7 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        ///     Sample size
+        /// Sample size
         /// </summary>
         public int SampleSize
         {
@@ -76,7 +79,7 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        ///     Format type
+        /// Format type
         /// </summary>
         public Guid FormatType
         {
@@ -84,52 +87,58 @@ namespace NAudio.Dmo
         }
 
         /// <summary>
-        ///     Format type name
+        /// Format type name
         /// </summary>
         public string FormatTypeName
         {
             get
             {
-                if (formattype == DmoMediaTypeGuids.FORMAT_None)
+                if(formattype == DmoMediaTypeGuids.FORMAT_None)
                 {
                     return "None";
                 }
-                if (formattype == Guid.Empty)
+                else if (formattype == Guid.Empty)
                 {
                     return "Null";
                 }
-                if (formattype == DmoMediaTypeGuids.FORMAT_WaveFormatEx)
+                else if(formattype == DmoMediaTypeGuids.FORMAT_WaveFormatEx)
                 {
                     return "WaveFormatEx";
                 }
-                return FormatType.ToString();
+                else
+                {
+                    return FormatType.ToString();
+                }
             }
         }
 
         /// <summary>
-        ///     Gets the structure as a Wave format (if it is one)
-        /// </summary>
+        /// Gets the structure as a Wave format (if it is one)
+        /// </summary>        
         public WaveFormat GetWaveFormat()
         {
             if (formattype == DmoMediaTypeGuids.FORMAT_WaveFormatEx)
-            {
+            {                
                 return WaveFormat.MarshalFromPtr(pbFormat);
             }
-            throw new InvalidOperationException("Not a WaveFormat type");
+            else
+            {
+                throw new InvalidOperationException("Not a WaveFormat type");
+            }
         }
 
         /// <summary>
-        ///     Sets this object up to point to a wave format
+        /// Sets this object up to point to a wave format
         /// </summary>
         /// <param name="waveFormat">Wave format structure</param>
         public void SetWaveFormat(WaveFormat waveFormat)
         {
-            majortype = MediaTypes.MEDIATYPE_Audio;
-
-            var wfe = waveFormat as WaveFormatExtensible;
+            this.majortype = MediaTypes.MEDIATYPE_Audio;
+            
+            WaveFormatExtensible wfe = waveFormat as WaveFormatExtensible;
             if (wfe != null)
             {
-                subtype = wfe.SubFormat;
+                this.subtype = wfe.SubFormat;
             }
             else
             {
@@ -148,9 +157,8 @@ namespace NAudio.Dmo
                         throw new ArgumentException(String.Format("Not a supported encoding {0}", waveFormat.Encoding));
                 }
             }
-            bFixedSizeSamples = (SubType == AudioMediaSubtypes.MEDIASUBTYPE_PCM ||
-                                 SubType == AudioMediaSubtypes.MEDIASUBTYPE_IEEE_FLOAT);
-            formattype = DmoMediaTypeGuids.FORMAT_WaveFormatEx;
+            this.bFixedSizeSamples = (this.SubType == AudioMediaSubtypes.MEDIASUBTYPE_PCM || this.SubType == AudioMediaSubtypes.MEDIASUBTYPE_IEEE_FLOAT);
+            this.formattype = DmoMediaTypeGuids.FORMAT_WaveFormatEx;
             if (cbFormat < Marshal.SizeOf(waveFormat))
                 throw new InvalidOperationException("Not enough memory assigned for a WaveFormat structure");
             //Debug.Assert(cbFormat >= ,"Not enough space");

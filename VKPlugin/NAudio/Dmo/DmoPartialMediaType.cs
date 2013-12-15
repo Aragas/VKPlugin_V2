@@ -1,14 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace NAudio.Dmo
 {
     /// <summary>
-    ///     DMO_PARTIAL_MEDIATYPE
+    /// DMO_PARTIAL_MEDIATYPE
     /// </summary>
-    internal struct DmoPartialMediaType
+    struct DmoPartialMediaType
     {
-        public Guid Type { get; internal set; }
+        Guid type;
+        Guid subtype;
 
-        public Guid Subtype { get; internal set; }
+        public Guid Type
+        {
+            get { return type; }
+            internal set { type = value; }
+        }
+
+        public Guid Subtype
+        {
+            get { return subtype; }
+            internal set { subtype = value; }
+        }
     }
 }

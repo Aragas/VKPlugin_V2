@@ -1,63 +1,71 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Runtime.InteropServices;
 
 namespace NAudio.Midi
 {
     /// <summary>
-    ///     MIDI In Device Capabilities
+    /// MIDI In Device Capabilities
     /// </summary>
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     public struct MidiInCapabilities
     {
         /// <summary>
-        ///     wMid
+        /// wMid
         /// </summary>
-        private readonly UInt16 manufacturerId;
-
+        UInt16 manufacturerId;
         /// <summary>
-        ///     wPid
+        /// wPid
         /// </summary>
-        private readonly UInt16 productId;
-
+        UInt16 productId;
         /// <summary>
-        ///     vDriverVersion
+        /// vDriverVersion
         /// </summary>
-        private readonly UInt32 driverVersion;
-
+        UInt32 driverVersion;
         /// <summary>
-        ///     Product Name
+        /// Product Name
         /// </summary>
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxProductNameLength)] private readonly string productName;
-
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MaxProductNameLength)]
+        string productName;
         /// <summary>
-        ///     Support - Reserved
+        /// Support - Reserved
         /// </summary>
-        private readonly Int32 support;
+        Int32 support;
 
         private const int MaxProductNameLength = 32;
 
         /// <summary>
-        ///     Gets the manufacturer of this device
+        /// Gets the manufacturer of this device
         /// </summary>
         public Manufacturers Manufacturer
         {
-            get { return (Manufacturers) manufacturerId; }
+            get 
+            {
+                return (Manufacturers)manufacturerId;
+            }
         }
-
+        
         /// <summary>
-        ///     Gets the product identifier (manufacturer specific)
+        /// Gets the product identifier (manufacturer specific)
         /// </summary>
-        public int ProductId
+        public int ProductId 
         {
-            get { return productId; }
+            get 
+            {
+                return productId;
+            }
         }
-
+        
         /// <summary>
-        ///     Gets the product name
+        /// Gets the product name
         /// </summary>
-        public string ProductName
+        public string ProductName 
         {
-            get { return productName; }
+            get 
+            {
+                return productName;
+            }
         }
     }
 }

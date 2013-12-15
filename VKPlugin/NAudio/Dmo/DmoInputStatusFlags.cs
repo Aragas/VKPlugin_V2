@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace NAudio.Dmo
 {
     [Flags]
-    internal enum DmoInputStatusFlags
+    enum DmoInputStatusFlags
     {
         None,
-        DMO_INPUT_STATUSF_ACCEPT_DATA = 0x1
+        DMO_INPUT_STATUSF_ACCEPT_DATA	= 0x1
     }
 }

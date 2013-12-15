@@ -1,45 +1,58 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Diagnostics;
 using NAudio.Utils;
 
 namespace NAudio.Wave
 {
     /// <summary>
-    ///     Helper stream that lets us read from compressed audio files with large block alignment
-    ///     as though we could read any amount and reposition anywhere
+    /// Helper stream that lets us read from compressed audio files with large block alignment
+    /// as though we could read any amount and reposition anywhere
     /// </summary>
     public class BlockAlignReductionStream : WaveStream
     {
+        private WaveStream sourceStream;
+        private long position;
         private readonly CircularBuffer circularBuffer;
         private long bufferStartPosition;
-        private long position;
         private byte[] sourceBuffer;
-        private WaveStream sourceStream;
+        private readonly object lockObject = new object();
 
         /// <summary>
-        ///     Creates a new BlockAlignReductionStream
+        /// Creates a new BlockAlignReductionStream
         /// </summary>
         /// <param name="sourceStream">the input stream</param>
         public BlockAlignReductionStream(WaveStream sourceStream)
         {
             this.sourceStream = sourceStream;
-            circularBuffer = new CircularBuffer(sourceStream.WaveFormat.AverageBytesPerSecond*4);
+            circularBuffer = new CircularBuffer(sourceStream.WaveFormat.AverageBytesPerSecond * 4);
+        }
+
+        private byte[] GetSourceBuffer(int size)
+        {
+            if (sourceBuffer == null || sourceBuffer.Length < size)
+            {
+                // let's give ourselves some leeway
+                sourceBuffer = new byte[size * 2];
+            }
+            return sourceBuffer;
         }
 
         /// <summary>
-        ///     Block alignment of this stream
+        /// Block alignment of this stream
         /// </summary>
         public override int BlockAlign
         {
             get
             {
                 // can position to sample level
-                return (WaveFormat.BitsPerSample/8)*WaveFormat.Channels;
+                return (WaveFormat.BitsPerSample / 8) * WaveFormat.Channels;
             }
         }
 
         /// <summary>
-        ///     Wave Format
+        /// Wave Format
         /// </summary>
         public override WaveFormat WaveFormat
         {
@@ -47,7 +60,7 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        ///     Length of this Stream
+        /// Length of this Stream
         /// </summary>
         public override long Length
         {
@@ -55,20 +68,23 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        ///     Current position within stream
+        /// Current position within stream
         /// </summary>
         public override long Position
         {
-            get { return position; }
+            get
+            {
+                return position;
+            }
             set
             {
-                lock (this)
+                lock (lockObject)
                 {
                     if (position != value)
                     {
-                        if (position%BlockAlign != 0)
+                        if (position % BlockAlign != 0)
                             throw new ArgumentException("Position must be block aligned");
-                        long sourcePosition = value - (value%sourceStream.BlockAlign);
+                        long sourcePosition = value - (value % sourceStream.BlockAlign);
                         if (sourceStream.Position != sourcePosition)
                         {
                             sourceStream.Position = sourcePosition;
@@ -83,21 +99,15 @@ namespace NAudio.Wave
 
         private long BufferEndPosition
         {
-            get { return bufferStartPosition + circularBuffer.Count; }
-        }
-
-        private byte[] GetSourceBuffer(int size)
-        {
-            if (sourceBuffer == null || sourceBuffer.Length < size)
+            get
             {
-                // let's give ourselves some leeway
-                sourceBuffer = new byte[size*2];
+
+                return bufferStartPosition + circularBuffer.Count;
             }
-            return sourceBuffer;
         }
 
         /// <summary>
-        ///     Disposes this WaveStream
+        /// Disposes this WaveStream
         /// </summary>
         protected override void Dispose(bool disposing)
         {
@@ -111,13 +121,13 @@ namespace NAudio.Wave
             }
             else
             {
-                Debug.Assert(false, "BlockAlignReductionStream was not Disposed");
+                System.Diagnostics.Debug.Assert(false, "BlockAlignReductionStream was not Disposed");
             }
             base.Dispose(disposing);
         }
 
         /// <summary>
-        ///     Reads data from this stream
+        /// Reads data from this stream
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="offset"></param>
@@ -125,15 +135,15 @@ namespace NAudio.Wave
         /// <returns></returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            lock (this)
+            lock (lockObject)
             {
                 // 1. attempt to fill the circular buffer with enough data to meet our request
                 while (BufferEndPosition < position + count)
                 {
                     int sourceReadCount = count;
-                    if (sourceReadCount%sourceStream.BlockAlign != 0)
+                    if (sourceReadCount % sourceStream.BlockAlign != 0)
                     {
-                        sourceReadCount = (count + sourceStream.BlockAlign) - (count%sourceStream.BlockAlign);
+                        sourceReadCount = (count + sourceStream.BlockAlign) - (count % sourceStream.BlockAlign);
                     }
 
                     int sourceRead = sourceStream.Read(GetSourceBuffer(sourceReadCount), 0, sourceReadCount);
@@ -148,7 +158,7 @@ namespace NAudio.Wave
                 // 2. discard any unnecessary stuff from the start
                 if (bufferStartPosition < position)
                 {
-                    circularBuffer.Advance((int) (position - bufferStartPosition));
+                    circularBuffer.Advance((int)(position - bufferStartPosition));
                     bufferStartPosition = position;
                 }
 
@@ -162,4 +172,7 @@ namespace NAudio.Wave
             }
         }
     }
+
+
+
 }

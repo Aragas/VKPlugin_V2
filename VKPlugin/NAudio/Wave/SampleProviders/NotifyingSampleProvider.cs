@@ -1,33 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace NAudio.Wave.SampleProviders
 {
     /// <summary>
-    ///     Simple class that raises an event on every sample
+    /// Simple class that raises an event on every sample
     /// </summary>
     public class NotifyingSampleProvider : ISampleProvider, ISampleNotifier
     {
-        private readonly int channels;
-        private readonly SampleEventArgs sampleArgs = new SampleEventArgs(0, 0);
-        private readonly ISampleProvider source;
+        private ISampleProvider source;
+        // try not to give the garbage collector anything to deal with when playing live audio
+        private SampleEventArgs sampleArgs = new SampleEventArgs(0, 0);
+        private int channels;
 
         /// <summary>
-        ///     Initializes a new instance of NotifyingSampleProvider
+        /// Initializes a new instance of NotifyingSampleProvider
         /// </summary>
         /// <param name="source">Source Sample Provider</param>
         public NotifyingSampleProvider(ISampleProvider source)
         {
             this.source = source;
-            channels = WaveFormat.Channels;
+            this.channels = this.WaveFormat.Channels;
         }
 
         /// <summary>
-        ///     Sample notifier
-        /// </summary>
-        public event EventHandler<SampleEventArgs> Sample;
-
-        /// <summary>
-        ///     WaveFormat
+        /// WaveFormat
         /// </summary>
         public WaveFormat WaveFormat
         {
@@ -35,7 +33,7 @@ namespace NAudio.Wave.SampleProviders
         }
 
         /// <summary>
-        ///     Reads samples from this sample provider
+        /// Reads samples from this sample provider
         /// </summary>
         /// <param name="buffer">Sample buffer</param>
         /// <param name="offset">Offset into sample buffer</param>
@@ -55,5 +53,10 @@ namespace NAudio.Wave.SampleProviders
             }
             return samplesRead;
         }
+
+        /// <summary>
+        /// Sample notifier
+        /// </summary>
+        public event EventHandler<SampleEventArgs> Sample;
     }
 }

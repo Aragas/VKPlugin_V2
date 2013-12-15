@@ -22,16 +22,19 @@
 // modified from Ray Molenkamp's original
 
 
+using System;
+using System.Collections.Generic;
+using System.Text;
 using NAudio.CoreAudioApi.Interfaces;
 
 namespace NAudio.CoreAudioApi
 {
     /// <summary>
-    ///     Property Store Property
+    /// Property Store Property
     /// </summary>
     public class PropertyStoreProperty
     {
-        private readonly PropertyKey propertyKey;
+        private PropertyKey propertyKey;
         private PropVariant propertyValue;
 
         internal PropertyStoreProperty(PropertyKey key, PropVariant value)
@@ -41,19 +44,26 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        ///     Property Key
+        /// Property Key
         /// </summary>
         public PropertyKey Key
         {
-            get { return propertyKey; }
+            get
+            {
+                return propertyKey;
+            }
         }
 
         /// <summary>
-        ///     Property Value
+        /// Property Value
         /// </summary>
         public object Value
         {
-            get { return propertyValue.Value; }
+            get
+            {
+                return propertyValue.Value;
+            }
         }
     }
 }
+

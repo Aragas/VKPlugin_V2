@@ -1,27 +1,28 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 namespace NAudio.Midi
 {
     /// <summary>
-    ///     Represents a Sequencer Specific event
+    /// Represents a Sequencer Specific event
     /// </summary>
     public class SequencerSpecificEvent : MetaEvent
     {
         private byte[] data;
 
         /// <summary>
-        ///     Reads a new sequencer specific event from a MIDI stream
+        /// Reads a new sequencer specific event from a MIDI stream
         /// </summary>
         /// <param name="br">The MIDI stream</param>
         /// <param name="length">The data length</param>
         public SequencerSpecificEvent(BinaryReader br, int length)
         {
-            data = br.ReadBytes(length);
+            this.data = br.ReadBytes(length);
         }
 
         /// <summary>
-        ///     Creates a new Sequencer Specific event
+        /// Creates a new Sequencer Specific event
         /// </summary>
         /// <param name="data">The sequencer specific data</param>
         /// <param name="absoluteTime">Absolute time of this event</param>
@@ -32,28 +33,31 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        ///     The contents of this sequencer specific
+        /// The contents of this sequencer specific
         /// </summary>
         public byte[] Data
         {
-            get { return data; }
+            get
+            {
+                return this.data;
+            }
             set
             {
-                data = value;
-                metaDataLength = data.Length;
+                this.data = value;
+                this.metaDataLength = this.data.Length;
             }
         }
 
         /// <summary>
-        ///     Describes this MIDI text event
+        /// Describes this MIDI text event
         /// </summary>
         /// <returns>A string describing this event</returns>
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.Append(base.ToString());
             sb.Append(" ");
-            foreach (byte b in data)
+            foreach (var b in data)
             {
                 sb.AppendFormat("{0:X2} ", b);
             }
@@ -62,9 +66,9 @@ namespace NAudio.Midi
         }
 
         /// <summary>
-        ///     Calls base class export first, then exports the data
-        ///     specific to this event
-        ///     <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
+        /// Calls base class export first, then exports the data 
+        /// specific to this event
+        /// <seealso cref="MidiEvent.Export">MidiEvent.Export</seealso>
         /// </summary>
         public override void Export(ref long absoluteTime, BinaryWriter writer)
         {

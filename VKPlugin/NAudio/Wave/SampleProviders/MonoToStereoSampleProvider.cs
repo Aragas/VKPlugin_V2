@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace NAudio.Wave.SampleProviders
 {
     /// <summary>
-    ///     No nonsense mono to stereo provider, no volume adjustment,
-    ///     just copies input to left and right.
+    /// No nonsense mono to stereo provider, no volume adjustment,
+    /// just copies input to left and right. 
     /// </summary>
     public class MonoToStereoSampleProvider : ISampleProvider
     {
-        private readonly ISampleProvider source;
-        private readonly WaveFormat waveFormat;
+        private ISampleProvider source;
+        private WaveFormat waveFormat;
         private float[] sourceBuffer;
 
         /// <summary>
-        ///     Initializes a new instance of MonoToStereoSampleProvider
+        /// Initializes a new instance of MonoToStereoSampleProvider
         /// </summary>
         /// <param name="source">Source sample provider</param>
         public MonoToStereoSampleProvider(ISampleProvider source)
@@ -23,19 +25,19 @@ namespace NAudio.Wave.SampleProviders
                 throw new ArgumentException("Source must be mono");
             }
             this.source = source;
-            waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(source.WaveFormat.SampleRate, 2);
+            this.waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(source.WaveFormat.SampleRate, 2);
         }
 
         /// <summary>
-        ///     WaveFormat of this provider
+        /// WaveFormat of this provider
         /// </summary>
         public WaveFormat WaveFormat
         {
-            get { return waveFormat; }
+            get { return this.waveFormat; }
         }
 
         /// <summary>
-        ///     Reads samples from this provider
+        /// Reads samples from this provider
         /// </summary>
         /// <param name="buffer">Sample buffer</param>
         /// <param name="offset">Offset into sample buffer</param>
@@ -43,7 +45,7 @@ namespace NAudio.Wave.SampleProviders
         /// <returns>Number of samples read</returns>
         public int Read(float[] buffer, int offset, int count)
         {
-            int sourceSamplesRequired = count/2;
+            int sourceSamplesRequired = count / 2;
             int outIndex = offset;
             EnsureSourceBuffer(sourceSamplesRequired);
             int sourceSamplesRead = source.Read(sourceBuffer, 0, sourceSamplesRequired);
@@ -52,14 +54,14 @@ namespace NAudio.Wave.SampleProviders
                 buffer[outIndex++] = sourceBuffer[n];
                 buffer[outIndex++] = sourceBuffer[n];
             }
-            return sourceSamplesRead*2;
+            return sourceSamplesRead * 2;
         }
 
         private void EnsureSourceBuffer(int count)
         {
-            if (sourceBuffer == null || sourceBuffer.Length < count)
+            if (this.sourceBuffer == null || this.sourceBuffer.Length < count)
             {
-                sourceBuffer = new float[count];
+                this.sourceBuffer = new float[count];
             }
         }
     }

@@ -24,8 +24,8 @@
  */
 
 using System;
-using System.Runtime.InteropServices;
 using NAudio.CoreAudioApi.Interfaces;
+using System.Runtime.InteropServices;
 
 namespace NAudio.CoreAudioApi
 {
@@ -35,14 +35,14 @@ namespace NAudio.CoreAudioApi
     // to show up in the public API. 
     internal class AudioEndpointVolumeCallback : IAudioEndpointVolumeCallback
     {
-        private readonly AudioEndpointVolume _Parent;
-
+        private readonly AudioEndpointVolume parent;
+        
         internal AudioEndpointVolumeCallback(AudioEndpointVolume parent)
         {
-            _Parent = parent;
+            this.parent = parent;
         }
-
-        public void OnNotify(IntPtr NotifyData)
+        
+        public void OnNotify(IntPtr notifyData)
         {
             //Since AUDIO_VOLUME_NOTIFICATION_DATA is dynamic in length based on the
             //number of audio channels available we cannot just call PtrToStructure 
@@ -50,27 +50,24 @@ namespace NAudio.CoreAudioApi
             //data is marshalled into the data structure, then with some IntPtr math the
             //remaining floats are read from memory.
             //
-            var data =
-                (AudioVolumeNotificationDataStruct)
-                    Marshal.PtrToStructure(NotifyData, typeof (AudioVolumeNotificationDataStruct));
-
+            var data = (AudioVolumeNotificationDataStruct)Marshal.PtrToStructure(notifyData, typeof(AudioVolumeNotificationDataStruct));
+            
             //Determine offset in structure of the first float
-            IntPtr Offset = Marshal.OffsetOf(typeof (AudioVolumeNotificationDataStruct), "ChannelVolume");
+            var offset = Marshal.OffsetOf(typeof(AudioVolumeNotificationDataStruct), "ChannelVolume");
             //Determine offset in memory of the first float
-            var FirstFloatPtr = (IntPtr) ((long) NotifyData + (long) Offset);
+            var firstFloatPtr = (IntPtr)((long)notifyData + (long)offset);
 
             var voldata = new float[data.nChannels];
-
+            
             //Read all floats from memory.
             for (int i = 0; i < data.nChannels; i++)
             {
-                voldata[i] = (float) Marshal.PtrToStructure(FirstFloatPtr, typeof (float));
+                voldata[i] = (float)Marshal.PtrToStructure(firstFloatPtr, typeof(float));
             }
 
             //Create combined structure and Fire Event in parent class.
-            var NotificationData = new AudioVolumeNotificationData(data.guidEventContext, data.bMuted,
-                data.fMasterVolume, voldata);
-            _Parent.FireNotification(NotificationData);
+            var notificationData = new AudioVolumeNotificationData(data.guidEventContext, data.bMuted, data.fMasterVolume, voldata);
+            parent.FireNotification(notificationData);
         }
     }
 }

@@ -1,19 +1,20 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace NAudio.Wave
 {
     /// <summary>
-    ///     Holds information about a RIFF file chunk
+    /// Holds information about a RIFF file chunk
     /// </summary>
     public class RiffChunk
     {
-        private readonly int identifier;
-        private readonly int length;
-        private readonly long streamPosition;
-
+        int identifier;
+        int length;
+        long streamPosition;
+        
         /// <summary>
-        ///     Creates a RiffChunk object
+        /// Creates a RiffChunk object
         /// </summary>
         public RiffChunk(int identifier, int length, long streamPosition)
         {
@@ -23,35 +24,47 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        ///     The chunk identifier
+        /// The chunk identifier
         /// </summary>
         public int Identifier
         {
-            get { return identifier; }
+            get
+            {
+                return identifier;
+            }
         }
 
         /// <summary>
-        ///     The chunk identifier converted to a string
+        /// The chunk identifier converted to a string
         /// </summary>
         public string IdentifierAsString
         {
-            get { return Encoding.ASCII.GetString(BitConverter.GetBytes(identifier)); }
+            get
+            {
+                return Encoding.UTF8.GetString(BitConverter.GetBytes(identifier));
+            }
         }
 
         /// <summary>
-        ///     The chunk length
+        /// The chunk length
         /// </summary>
         public int Length
         {
-            get { return length; }
+            get
+            {
+                return length;
+            }
         }
 
         /// <summary>
-        ///     The stream position this chunk is located at
+        /// The stream position this chunk is located at
         /// </summary>
         public long StreamPosition
         {
-            get { return streamPosition; }
+            get
+            {
+                return streamPosition;
+            }
         }
     }
 }

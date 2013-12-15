@@ -1,7 +1,11 @@
-﻿namespace NAudio.Wave.Compression
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace NAudio.Wave.Compression
 {
     /// <summary>
-    ///     ACM Format Tag
+    /// ACM Format Tag
     /// </summary>
     public class AcmFormatTag
     {
@@ -9,11 +13,11 @@
 
         internal AcmFormatTag(AcmFormatTagDetails formatTagDetails)
         {
-            this.formatTagDetails = formatTagDetails;
+            this.formatTagDetails = formatTagDetails;                        
         }
 
         /// <summary>
-        ///     Format Tag Index
+        /// Format Tag Index
         /// </summary>
         public int FormatTagIndex
         {
@@ -21,15 +25,15 @@
         }
 
         /// <summary>
-        ///     Format Tag
+        /// Format Tag
         /// </summary>
         public WaveFormatEncoding FormatTag
         {
-            get { return (WaveFormatEncoding) formatTagDetails.formatTag; }
+            get { return (WaveFormatEncoding)formatTagDetails.formatTag; }
         }
 
         /// <summary>
-        ///     Format Size
+        /// Format Size
         /// </summary>
         public int FormatSize
         {
@@ -37,7 +41,7 @@
         }
 
         /// <summary>
-        ///     Support Flags
+        /// Support Flags
         /// </summary>
         public AcmDriverDetailsSupportFlags SupportFlags
         {
@@ -45,7 +49,7 @@
         }
 
         /// <summary>
-        ///     Standard Formats Count
+        /// Standard Formats Count
         /// </summary>
         public int StandardFormatsCount
         {
@@ -53,11 +57,13 @@
         }
 
         /// <summary>
-        ///     Format Description
+        /// Format Description
         /// </summary>
         public string FormatDescription
         {
             get { return formatTagDetails.formatDescription; }
         }
+
+
     }
 }

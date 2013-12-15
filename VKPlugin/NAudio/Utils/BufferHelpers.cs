@@ -1,12 +1,16 @@
-﻿namespace NAudio.Utils
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace NAudio.Utils
 {
     /// <summary>
-    ///     Helper methods for working with audio buffers
+    /// Helper methods for working with audio buffers
     /// </summary>
     public static class BufferHelpers
     {
         /// <summary>
-        ///     Ensures the buffer is big enough
+        /// Ensures the buffer is big enough
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="bytesRequired"></param>
@@ -21,7 +25,7 @@
         }
 
         /// <summary>
-        ///     Ensures the buffer is big enough
+        /// Ensures the buffer is big enough
         /// </summary>
         /// <param name="buffer"></param>
         /// <param name="samplesRequired"></param>

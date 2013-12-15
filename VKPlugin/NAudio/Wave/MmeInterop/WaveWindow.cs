@@ -1,28 +1,30 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Text;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace NAudio.Wave
 {
-    internal class WaveWindowNative : NativeWindow
+    class WaveWindowNative : System.Windows.Forms.NativeWindow
     {
-        private readonly WaveInterop.WaveCallback waveCallback;
+        private WaveInterop.WaveCallback waveCallback;
 
         public WaveWindowNative(WaveInterop.WaveCallback waveCallback)
         {
             this.waveCallback = waveCallback;
         }
 
-        protected override void WndProc(ref Message m)
+        protected override void WndProc(ref System.Windows.Forms.Message m)
         {
-            var message = (WaveInterop.WaveMessage) m.Msg;
-
-            switch (message)
+            WaveInterop.WaveMessage message = (WaveInterop.WaveMessage)m.Msg;
+            
+            switch(message)
             {
                 case WaveInterop.WaveMessage.WaveOutDone:
                 case WaveInterop.WaveMessage.WaveInData:
                     IntPtr hOutputDevice = m.WParam;
-                    var waveHeader = new WaveHeader();
+                    WaveHeader waveHeader = new WaveHeader();
                     Marshal.PtrToStructure(m.LParam, waveHeader);
                     waveCallback(hOutputDevice, message, IntPtr.Zero, waveHeader, IntPtr.Zero);
                     break;
@@ -39,25 +41,25 @@ namespace NAudio.Wave
         }
     }
 
-    internal class WaveWindow : Form
+    class WaveWindow : Form
     {
-        private readonly WaveInterop.WaveCallback waveCallback;
+        private WaveInterop.WaveCallback waveCallback;
 
         public WaveWindow(WaveInterop.WaveCallback waveCallback)
         {
             this.waveCallback = waveCallback;
         }
 
-        protected override void WndProc(ref Message m)
+        protected override void WndProc(ref System.Windows.Forms.Message m)
         {
-            var message = (WaveInterop.WaveMessage) m.Msg;
-
-            switch (message)
+            WaveInterop.WaveMessage message = (WaveInterop.WaveMessage)m.Msg;
+            
+            switch(message)
             {
                 case WaveInterop.WaveMessage.WaveOutDone:
                 case WaveInterop.WaveMessage.WaveInData:
                     IntPtr hOutputDevice = m.WParam;
-                    var waveHeader = new WaveHeader();
+                    WaveHeader waveHeader = new WaveHeader();
                     Marshal.PtrToStructure(m.LParam, waveHeader);
                     waveCallback(hOutputDevice, message, IntPtr.Zero, waveHeader, IntPtr.Zero);
                     break;

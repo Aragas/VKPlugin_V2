@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace NAudio.Dmo
 {
     [Flags]
-    internal enum OutputStreamInfoFlags
+    enum OutputStreamInfoFlags
     {
         DMO_OUTPUT_STREAMF_WHOLE_SAMPLES = 0x00000001,
         DMO_OUTPUT_STREAMF_SINGLE_SAMPLE_PER_BUFFER = 0x00000002,

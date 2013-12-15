@@ -1,15 +1,29 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.IO;
 
 namespace NAudio.Utils
 {
     /// <summary>
-    ///     Pass-through stream that ignores Dispose
-    ///     Useful for dealing with MemoryStreams that you want to re-use
+    /// Pass-through stream that ignores Dispose
+    /// Useful for dealing with MemoryStreams that you want to re-use
     /// </summary>
     public class IgnoreDisposeStream : Stream
     {
         /// <summary>
-        ///     Creates a new IgnoreDisposeStream
+        /// The source stream all other methods fall through to
+        /// </summary>
+        public Stream SourceStream { get; private set; }
+
+        /// <summary>
+        /// If true the Dispose will be ignored, if false, will pass through to the SourceStream
+        /// Set to true by default
+        /// </summary>
+        public bool IgnoreDispose { get; set; }
+
+        /// <summary>
+        /// Creates a new IgnoreDisposeStream
         /// </summary>
         /// <param name="sourceStream">The source stream</param>
         public IgnoreDisposeStream(Stream sourceStream)
@@ -19,18 +33,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     The source stream all other methods fall through to
-        /// </summary>
-        public Stream SourceStream { get; private set; }
-
-        /// <summary>
-        ///     If true the Dispose will be ignored, if false, will pass through to the SourceStream
-        ///     Set to true by default
-        /// </summary>
-        public bool IgnoreDispose { get; set; }
-
-        /// <summary>
-        ///     Can Read
+        /// Can Read
         /// </summary>
         public override bool CanRead
         {
@@ -38,7 +41,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Can Seek
+        /// Can Seek
         /// </summary>
         public override bool CanSeek
         {
@@ -46,7 +49,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Can write to the underlying stream
+        /// Can write to the underlying stream
         /// </summary>
         public override bool CanWrite
         {
@@ -54,24 +57,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Gets the length of the underlying stream
-        /// </summary>
-        public override long Length
-        {
-            get { return SourceStream.Length; }
-        }
-
-        /// <summary>
-        ///     Gets or sets the position of the underlying stream
-        /// </summary>
-        public override long Position
-        {
-            get { return SourceStream.Position; }
-            set { SourceStream.Position = value; }
-        }
-
-        /// <summary>
-        ///     Flushes the underlying stream
+        /// Flushes the underlying stream
         /// </summary>
         public override void Flush()
         {
@@ -79,7 +65,30 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Reads from the underlying stream
+        /// Gets the length of the underlying stream
+        /// </summary>
+        public override long Length
+        {
+            get { return SourceStream.Length; }
+        }
+
+        /// <summary>
+        /// Gets or sets the position of the underlying stream
+        /// </summary>
+        public override long Position
+        {
+            get
+            {
+                return SourceStream.Position;
+            }
+            set
+            {
+                SourceStream.Position = value;
+            }
+        }
+
+        /// <summary>
+        /// Reads from the underlying stream
         /// </summary>
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -87,7 +96,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Seeks on the underlying stream
+        /// Seeks on the underlying stream
         /// </summary>
         public override long Seek(long offset, SeekOrigin origin)
         {
@@ -95,7 +104,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Sets the length of the underlying stream
+        /// Sets the length of the underlying stream
         /// </summary>
         public override void SetLength(long value)
         {
@@ -103,7 +112,7 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Writes to the underlying stream
+        /// Writes to the underlying stream
         /// </summary>
         public override void Write(byte[] buffer, int offset, int count)
         {
@@ -111,8 +120,8 @@ namespace NAudio.Utils
         }
 
         /// <summary>
-        ///     Dispose - by default (IgnoreDispose = true) will do nothing,
-        ///     leaving the underlying stream undisposed
+        /// Dispose - by default (IgnoreDispose = true) will do nothing,
+        /// leaving the underlying stream undisposed
         /// </summary>
         protected override void Dispose(bool disposing)
         {
