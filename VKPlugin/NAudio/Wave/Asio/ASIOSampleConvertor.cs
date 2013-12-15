@@ -30,22 +30,26 @@ namespace NAudio.Wave.Asio
                         case 16:
                             convertor = (is2Channels) ? (SampleConvertor)ConvertorShortToInt2Channels : (SampleConvertor)ConvertorShortToIntGeneric;
                             break;
+
                         case 32:
                             convertor = (is2Channels) ? (SampleConvertor)ConvertorFloatToInt2Channels : (SampleConvertor)ConvertorFloatToIntGeneric;
                             break;
                     }
                     break;
+
                 case AsioSampleType.Int16LSB:
                     switch (waveFormat.BitsPerSample)
                     {
                         case 16:
                             convertor = (is2Channels) ? (SampleConvertor)ConvertorShortToShort2Channels : (SampleConvertor)ConvertorShortToShortGeneric;
                             break;
+
                         case 32:
                             convertor = (is2Channels) ? (SampleConvertor)ConvertorFloatToShort2Channels : (SampleConvertor)ConvertorFloatToShortGeneric;
                             break;
                     }
                     break;
+
                 case AsioSampleType.Int24LSB:
                     switch (waveFormat.BitsPerSample)
                     {
@@ -56,6 +60,7 @@ namespace NAudio.Wave.Asio
                             break;
                     }
                     break;
+
                 case AsioSampleType.Float32LSB:
                     switch (waveFormat.BitsPerSample)
                     {
@@ -74,7 +79,6 @@ namespace NAudio.Wave.Asio
             }
             return convertor;
         }
-
 
         /// <summary>
         /// Optimized convertor for 2 channels SHORT
@@ -278,7 +282,7 @@ namespace NAudio.Wave.Asio
             unsafe
             {
                 float* inputSamples = (float*)inputInterleavedBuffer;
-                
+
                 byte*[] samples = new byte*[nbChannels];
                 for (int i = 0; i < nbChannels; i++)
                 {

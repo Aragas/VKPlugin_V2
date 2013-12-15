@@ -1,13 +1,12 @@
 // created on 09/12/2002 at 21:03
 using System;
 using System.Runtime.InteropServices;
-using NAudio.Wave;
 
 // TODO: add function help from MSDN
 // TODO: Create enums for flags parameters
 namespace NAudio.Mixer
 {
-    class MixerInterop
+    internal class MixerInterop
     {
         public const UInt32 MIXERCONTROL_CONTROLF_UNIFORM = 0x00000001;
         public const UInt32 MIXERCONTROL_CONTROLF_MULTIPLE = 0x00000002;
@@ -76,8 +75,10 @@ namespace NAudio.Mixer
             public UInt16 wMid;
             public UInt16 wPid;
             public UInt32 vDriverVersion; // MMVERSION - major high byte, minor low byte
+
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAXPNAMELEN)]
             public String szPname;
+
             public UInt32 fdwSupport;
             public UInt32 cDestinations;
         }
@@ -101,20 +102,20 @@ namespace NAudio.Mixer
         public enum MIXERLINE_LINEF
         {
             /// <summary>
-            /// Audio line is active. An active line indicates that a signal is probably passing 
+            /// Audio line is active. An active line indicates that a signal is probably passing
             /// through the line.
             /// </summary>
             MIXERLINE_LINEF_ACTIVE = 1,
 
             /// <summary>
-            /// Audio line is disconnected. A disconnected line's associated controls can still be 
+            /// Audio line is disconnected. A disconnected line's associated controls can still be
             /// modified, but the changes have no effect until the line is connected.
             /// </summary>
             MIXERLINE_LINEF_DISCONNECTED = 0x8000,
 
             /// <summary>
-            /// Audio line is an audio source line associated with a single audio destination line. 
-            /// If this flag is not set, this line is an audio destination line associated with zero 
+            /// Audio line is an audio source line associated with a single audio destination line.
+            /// If this flag is not set, this line is an audio destination line associated with zero
             /// or more audio source lines.
             /// </summary>
             MIXERLINE_LINEF_SOURCE = (unchecked((int)0x80000000))
@@ -134,18 +135,24 @@ namespace NAudio.Mixer
             public Int32 cChannels;
             public Int32 cConnections;
             public Int32 cControls;
+
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MIXER_SHORT_NAME_CHARS)]
             public String szShortName;
+
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MIXER_LONG_NAME_CHARS)]
             public String szName;
+
             // start of target struct 'Target'
             public UInt32 dwType;
+
             public UInt32 dwDeviceID;
             public UInt16 wMid;
             public UInt16 wPid;
             public UInt32 vDriverVersion; // MMVERSION - major high byte, minor low byte
+
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MAXPNAMELEN)]
             public String szPname;
+
             // end of target struct
         }
 
@@ -159,22 +166,27 @@ namespace NAudio.Mixer
             /// dwMinimum / lMinimum / reserved 0
             /// </summary>
             public int minimum;
+
             /// <summary>
             /// dwMaximum / lMaximum / reserved 1
             /// </summary>
             public int maximum;
+
             /// <summary>
             /// reserved 2
             /// </summary>
             public int reserved2;
+
             /// <summary>
             /// reserved 3
             /// </summary>
             public int reserved3;
+
             /// <summary>
             /// reserved 4
             /// </summary>
             public int reserved4;
+
             /// <summary>
             /// reserved 5
             /// </summary>
@@ -191,22 +203,27 @@ namespace NAudio.Mixer
             /// cSteps / reserved[0]
             /// </summary>
             public int step;
+
             /// <summary>
             /// cbCustomData / reserved[1], number of bytes for control details
             /// </summary>
             public int customData;
+
             /// <summary>
             /// reserved 2
             /// </summary>
             public int reserved2;
+
             /// <summary>
             /// reserved 3
             /// </summary>
             public int reserved3;
+
             /// <summary>
             /// reserved 4
             /// </summary>
             public int reserved4;
+
             /// <summary>
             /// reserved 5
             /// </summary>
@@ -225,10 +242,13 @@ namespace NAudio.Mixer
             public MixerControlType dwControlType;
             public UInt32 fdwControl;
             public UInt32 cMultipleItems;
+
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MIXER_SHORT_NAME_CHARS)]
             public String szShortName;
+
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MIXER_LONG_NAME_CHARS)]
             public String szName;
+
             public Bounds Bounds;
             public Metrics Metrics;
         }
@@ -253,6 +273,7 @@ namespace NAudio.Mixer
         {
             public UInt32 dwParam1;
             public UInt32 dwParam2;
+
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = MIXER_LONG_NAME_CHARS)]
             public String szName;
         }

@@ -1,23 +1,21 @@
-﻿using System;
+﻿using NAudio.Wave;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using NAudio.Utils;
-using NAudio.Wave;
 using System.Diagnostics;
+using System.IO;
 
 namespace NAudio.FileFormats.Wav
 {
-    class WaveFileChunkReader
+    internal class WaveFileChunkReader
     {
-        private WaveFormat waveFormat;
-        private long dataChunkPosition;
+        private readonly bool storeAllChunks;
+        private readonly bool strictMode;
         private long dataChunkLength;
-        private List<RiffChunk> riffChunks;
-        private bool strictMode;
+        private long dataChunkPosition;
         private bool isRf64;
-        private bool storeAllChunks;
+        private List<RiffChunk> riffChunks;
         private long riffSize;
+        private WaveFormat waveFormat;
 
         public WaveFileChunkReader()
         {
@@ -25,18 +23,50 @@ namespace NAudio.FileFormats.Wav
             strictMode = false;
         }
 
+        /// <summary>
+        ///     WaveFormat
+        /// </summary>
+        public WaveFormat WaveFormat
+        {
+            get { return waveFormat; }
+        }
+
+        /// <summary>
+        ///     Data Chunk Position
+        /// </summary>
+        public long DataChunkPosition
+        {
+            get { return dataChunkPosition; }
+        }
+
+        /// <summary>
+        ///     Data Chunk Length
+        /// </summary>
+        public long DataChunkLength
+        {
+            get { return dataChunkLength; }
+        }
+
+        /// <summary>
+        ///     Riff Chunks
+        /// </summary>
+        public List<RiffChunk> RiffChunks
+        {
+            get { return riffChunks; }
+        }
+
         public void ReadWaveHeader(Stream stream)
         {
-            this.dataChunkPosition = -1;
-            this.waveFormat = null;
-            this.riffChunks = new List<RiffChunk>();
-            this.dataChunkLength = 0;
+            dataChunkPosition = -1;
+            waveFormat = null;
+            riffChunks = new List<RiffChunk>();
+            dataChunkLength = 0;
 
-            BinaryReader br = new BinaryReader(stream);
+            var br = new BinaryReader(stream);
             ReadRiffHeader(br);
-            this.riffSize = br.ReadUInt32(); // read the file size (minus 8 bytes)
+            riffSize = br.ReadUInt32(); // read the file size (minus 8 bytes)
 
-            if (br.ReadInt32() != ChunkIdentifier.ChunkIdentifierToInt32("WAVE"))
+            if (br.ReadInt32() != WaveInterop.mmioStringToFOURCC("WAVE", 0))
             {
                 throw new FormatException("Not a WAVE file - no WAVE header");
             }
@@ -46,9 +76,9 @@ namespace NAudio.FileFormats.Wav
                 ReadDs64Chunk(br);
             }
 
-            int dataChunkID = ChunkIdentifier.ChunkIdentifierToInt32("data");
-            int formatChunkId = ChunkIdentifier.ChunkIdentifierToInt32("fmt ");
-            
+            int dataChunkID = WaveInterop.mmioStringToFOURCC("data", 0);
+            int formatChunkId = WaveInterop.mmioStringToFOURCC("fmt ", 0);
+
             // sometimes a file has more data than is specified after the RIFF header
             long stopPosition = Math.Min(riffSize + 8, stream.Length);
 
@@ -103,19 +133,19 @@ namespace NAudio.FileFormats.Wav
         }
 
         /// <summary>
-        /// http://tech.ebu.ch/docs/tech/tech3306-2009.pdf
+        ///     http://tech.ebu.ch/docs/tech/tech3306-2009.pdf
         /// </summary>
         private void ReadDs64Chunk(BinaryReader reader)
         {
-            int ds64ChunkId = ChunkIdentifier.ChunkIdentifierToInt32("ds64");
+            int ds64ChunkId = WaveInterop.mmioStringToFOURCC("ds64", 0);
             int chunkId = reader.ReadInt32();
             if (chunkId != ds64ChunkId)
             {
                 throw new FormatException("Invalid RF64 WAV file - No ds64 chunk found");
             }
             int chunkSize = reader.ReadInt32();
-            this.riffSize = reader.ReadInt64();
-            this.dataChunkLength = reader.ReadInt64();
+            riffSize = reader.ReadInt64();
+            dataChunkLength = reader.ReadInt64();
             long sampleCount = reader.ReadInt64(); // replaces the value in the fact chunk
             reader.ReadBytes(chunkSize - 24); // get to the end of this chunk (should parse extra stuff later)
         }
@@ -128,34 +158,14 @@ namespace NAudio.FileFormats.Wav
         private void ReadRiffHeader(BinaryReader br)
         {
             int header = br.ReadInt32();
-            if (header == ChunkIdentifier.ChunkIdentifierToInt32("RF64"))
+            if (header == WaveInterop.mmioStringToFOURCC("RF64", 0))
             {
-                this.isRf64 = true;
+                isRf64 = true;
             }
-            else if (header != ChunkIdentifier.ChunkIdentifierToInt32("RIFF"))
+            else if (header != WaveInterop.mmioStringToFOURCC("RIFF", 0))
             {
                 throw new FormatException("Not a WAVE file - no RIFF header");
             }
         }
-
-        /// <summary>
-        /// WaveFormat
-        /// </summary>
-        public WaveFormat WaveFormat { get { return this.waveFormat; } }
-
-        /// <summary>
-        /// Data Chunk Position
-        /// </summary>
-        public long DataChunkPosition { get { return this.dataChunkPosition; } }
-
-        /// <summary>
-        /// Data Chunk Length
-        /// </summary>
-        public long DataChunkLength { get { return this.dataChunkLength; } }
-
-        /// <summary>
-        /// Riff Chunks
-        /// </summary>
-        public List<RiffChunk> RiffChunks { get { return this.riffChunks; } }
     }
 }

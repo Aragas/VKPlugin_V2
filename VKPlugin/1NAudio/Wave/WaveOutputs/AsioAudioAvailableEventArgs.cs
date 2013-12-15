@@ -1,3 +1,0 @@
-﻿namespace NAudio.Wave.WaveOutputs
-{
-}

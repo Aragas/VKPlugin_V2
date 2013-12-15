@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-
-namespace NAudio.Wave.Compression
+﻿namespace NAudio.Wave.Compression
 {
     /// <summary>
-    /// ACM Format
+    ///     ACM Format
     /// </summary>
     public class AcmFormat
     {
-        private readonly AcmFormatDetails formatDetails;
-        private readonly WaveFormat waveFormat; 
+        private readonly WaveFormat waveFormat;
+        private AcmFormatDetails formatDetails;
 
         internal AcmFormat(AcmFormatDetails formatDetails)
         {
@@ -20,7 +15,7 @@ namespace NAudio.Wave.Compression
         }
 
         /// <summary>
-        /// Format Index
+        ///     Format Index
         /// </summary>
         public int FormatIndex
         {
@@ -28,7 +23,7 @@ namespace NAudio.Wave.Compression
         }
 
         /// <summary>
-        /// Format Tag
+        ///     Format Tag
         /// </summary>
         public WaveFormatEncoding FormatTag
         {
@@ -36,7 +31,7 @@ namespace NAudio.Wave.Compression
         }
 
         /// <summary>
-        /// Support Flags
+        ///     Support Flags
         /// </summary>
         public AcmDriverDetailsSupportFlags SupportFlags
         {
@@ -44,18 +39,15 @@ namespace NAudio.Wave.Compression
         }
 
         /// <summary>
-        /// WaveFormat
+        ///     WaveFormat
         /// </summary>
         public WaveFormat WaveFormat
         {
-            get 
-            {
-                return waveFormat; 
-            }
+            get { return waveFormat; }
         }
 
         /// <summary>
-        /// WaveFormat Size
+        ///     WaveFormat Size
         /// </summary>
         public int WaveFormatByteSize
         {
@@ -63,7 +55,7 @@ namespace NAudio.Wave.Compression
         }
 
         /// <summary>
-        /// Format Description
+        ///     Format Description
         /// </summary>
         public string FormatDescription
         {

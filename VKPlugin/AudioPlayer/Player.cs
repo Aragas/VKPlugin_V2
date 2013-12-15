@@ -352,7 +352,7 @@ namespace Rainmeter.AudioPlayer
                 try
                 {
                     value = value.Substring(1);
-                    AudioStream.Volume += (float) Convert.ToInt32(value)/(float) 100;
+                    AudioStream.Volume += (float)Convert.ToInt32(value) / (float)100;
                 }
                 catch (FormatException)
                 {
@@ -365,7 +365,7 @@ namespace Rainmeter.AudioPlayer
                 try
                 {
                     value = value.Substring(1);
-                    AudioStream.Volume -= (float) Convert.ToInt32(value)/(float) 100;
+                    AudioStream.Volume -= (float)Convert.ToInt32(value) / (float)100;
                 }
                 catch (FormatException)
                 {
@@ -377,7 +377,7 @@ namespace Rainmeter.AudioPlayer
             {
                 try
                 {
-                    AudioStream.Volume = (float) Convert.ToInt32(value)/(float) 100;
+                    AudioStream.Volume = (float)Convert.ToInt32(value) / (float)100;
                 }
                 catch (FormatException)
                 {

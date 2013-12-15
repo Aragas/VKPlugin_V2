@@ -1,21 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NAudio.Utils;
+﻿using NAudio.Utils;
+using System;
 
 namespace NAudio.Wave
 {
     /// <summary>
-    /// Converts from mono to stereo, allowing freedom to route all, some, or none of the incoming signal to left or right channels
+    ///     Converts from mono to stereo, allowing freedom to route all, some, or none of the incoming signal to left or right
+    ///     channels
     /// </summary>
     public class MonoToStereoProvider16 : IWaveProvider
     {
-        private IWaveProvider sourceProvider;
-        private WaveFormat outputFormat;
+        private readonly WaveFormat outputFormat;
+        private readonly IWaveProvider sourceProvider;
         private byte[] sourceBuffer;
 
         /// <summary>
-        /// Creates a new stereo waveprovider based on a mono input
+        ///     Creates a new stereo waveprovider based on a mono input
         /// </summary>
         /// <param name="sourceProvider">Mono 16 bit PCM input</param>
         public MonoToStereoProvider16(IWaveProvider sourceProvider)
@@ -33,38 +32,38 @@ namespace NAudio.Wave
                 throw new ArgumentException("Source must be 16 bit");
             }
             this.sourceProvider = sourceProvider;
-            this.outputFormat = new WaveFormat(sourceProvider.WaveFormat.SampleRate, 2);
+            outputFormat = new WaveFormat(sourceProvider.WaveFormat.SampleRate, 2);
             RightVolume = 1.0f;
             LeftVolume = 1.0f;
         }
 
         /// <summary>
-        /// 1.0 to copy the mono stream to the left channel without adjusting volume
+        ///     1.0 to copy the mono stream to the left channel without adjusting volume
         /// </summary>
         public float LeftVolume { get; set; }
 
         /// <summary>
-        /// 1.0 to copy the mono stream to the right channel without adjusting volume
+        ///     1.0 to copy the mono stream to the right channel without adjusting volume
         /// </summary>
         public float RightVolume { get; set; }
 
         /// <summary>
-        /// Output Wave Format
+        ///     Output Wave Format
         /// </summary>
         public WaveFormat WaveFormat
         {
-            get { return this.outputFormat; }
+            get { return outputFormat; }
         }
 
         /// <summary>
-        /// Reads bytes from this WaveProvider
+        ///     Reads bytes from this WaveProvider
         /// </summary>
         public int Read(byte[] buffer, int offset, int count)
-        {            
+        {
             int sourceBytesRequired = count / 2;
-            this.sourceBuffer = BufferHelpers.Ensure(this.sourceBuffer, sourceBytesRequired);
-            WaveBuffer sourceWaveBuffer = new WaveBuffer(sourceBuffer);
-            WaveBuffer destWaveBuffer = new WaveBuffer(buffer);
+            sourceBuffer = BufferHelpers.Ensure(sourceBuffer, sourceBytesRequired);
+            var sourceWaveBuffer = new WaveBuffer(sourceBuffer);
+            var destWaveBuffer = new WaveBuffer(buffer);
 
             int sourceBytesRead = sourceProvider.Read(sourceBuffer, 0, sourceBytesRequired);
             int samplesRead = sourceBytesRead / 2;
@@ -77,6 +76,5 @@ namespace NAudio.Wave
             }
             return samplesRead * 4;
         }
-
     }
 }

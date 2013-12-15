@@ -1,40 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NAudio.Wave;
-using NAudio.Utils;
+﻿using NAudio.Utils;
+using System;
 
 namespace NAudio.Wave
 {
     /// <summary>
-    /// Converts 16 bit PCM to IEEE float, optionally adjusting volume along the way
+    ///     Converts 16 bit PCM to IEEE float, optionally adjusting volume along the way
     /// </summary>
     public class Wave16ToFloatProvider : IWaveProvider
     {
-        private IWaveProvider sourceProvider;
+        private readonly IWaveProvider sourceProvider;
         private readonly WaveFormat waveFormat;
-        private volatile float volume;
         private byte[] sourceBuffer;
+        private volatile float volume;
 
         /// <summary>
-        /// Creates a new Wave16toFloatProvider
+        ///     Creates a new Wave16toFloatProvider
         /// </summary>
         /// <param name="sourceProvider">the source provider</param>
         public Wave16ToFloatProvider(IWaveProvider sourceProvider)
         {
             if (sourceProvider.WaveFormat.Encoding != WaveFormatEncoding.Pcm)
-                throw new ArgumentException("Only PCM supported");
+                throw new ApplicationException("Only PCM supported");
             if (sourceProvider.WaveFormat.BitsPerSample != 16)
-                throw new ArgumentException("Only 16 bit audio supported");
+                throw new ApplicationException("Only 16 bit audio supported");
 
-            waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sourceProvider.WaveFormat.SampleRate, sourceProvider.WaveFormat.Channels);
+            waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sourceProvider.WaveFormat.SampleRate,
+                sourceProvider.WaveFormat.Channels);
 
             this.sourceProvider = sourceProvider;
-            this.volume = 1.0f;
+            volume = 1.0f;
         }
 
         /// <summary>
-        /// Reads bytes from this wave stream
+        ///     Volume of this channel. 1.0 = full scale
+        /// </summary>
+        public float Volume
+        {
+            get { return volume; }
+            set { volume = value; }
+        }
+
+        /// <summary>
+        ///     Reads bytes from this wave stream
         /// </summary>
         /// <param name="destBuffer">The destination buffer</param>
         /// <param name="offset">Offset into the destination buffer</param>
@@ -45,8 +52,8 @@ namespace NAudio.Wave
             int sourceBytesRequired = numBytes / 2;
             sourceBuffer = BufferHelpers.Ensure(sourceBuffer, sourceBytesRequired);
             int sourceBytesRead = sourceProvider.Read(sourceBuffer, offset, sourceBytesRequired);
-            WaveBuffer sourceWaveBuffer = new WaveBuffer(sourceBuffer);
-            WaveBuffer destWaveBuffer = new WaveBuffer(destBuffer);
+            var sourceWaveBuffer = new WaveBuffer(sourceBuffer);
+            var destWaveBuffer = new WaveBuffer(destBuffer);
 
             int sourceSamples = sourceBytesRead / 2;
             int destOffset = offset / 4;
@@ -59,20 +66,11 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// <see cref="IWaveProvider.WaveFormat"/>
+        ///     <see cref="IWaveProvider.WaveFormat" />
         /// </summary>
         public WaveFormat WaveFormat
         {
             get { return waveFormat; }
-        }
-
-        /// <summary>
-        /// Volume of this channel. 1.0 = full scale
-        /// </summary>
-        public float Volume
-        {
-            get { return volume; }
-            set { volume = value; }
         }
     }
 }

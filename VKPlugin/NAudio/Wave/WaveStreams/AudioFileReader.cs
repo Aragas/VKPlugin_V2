@@ -1,83 +1,44 @@
-﻿using System;
-using NAudio.Wave.SampleProviders;
+﻿using NAudio.Wave.SampleProviders;
+using System;
 
 namespace NAudio.Wave
 {
     /// <summary>
-    /// AudioFileReader simplifies opening an audio file in NAudio
-    /// Simply pass in the filename, and it will attempt to open the
-    /// file and set up a conversion path that turns into PCM IEEE float.
-    /// ACM codecs will be used for conversion.
-    /// It provides a volume property and implements both WaveStream and
-    /// ISampleProvider, making it possibly the only stage in your audio
-    /// pipeline necessary for simple playback scenarios
+    ///     AudioFileReader simplifies opening an audio file in NAudio
+    ///     Simply pass in the filename, and it will attempt to open the
+    ///     file and set up a conversion path that turns into PCM IEEE float.
+    ///     ACM codecs will be used for conversion.
+    ///     It provides a volume property and implements both WaveStream and
+    ///     ISampleProvider, making it possibly the only stage in your audio
+    ///     pipeline necessary for simple playback scenarios
     /// </summary>
     public class AudioFileReader : WaveStream, ISampleProvider
     {
-        private string fileName;
-        private WaveStream readerStream; // the waveStream which we will use for all positioning
-        private readonly SampleChannel sampleChannel; // sample provider that gives us most stuff we need
         private readonly int destBytesPerSample;
-        private readonly int sourceBytesPerSample;
         private readonly long length;
         private readonly object lockObject;
+        private readonly SampleChannel sampleChannel; // sample provider that gives us most stuff we need
+        private readonly int sourceBytesPerSample;
+        private string fileName;
+        private WaveStream readerStream; // the waveStream which we will use for all positioning
 
         /// <summary>
-        /// Initializes a new instance of AudioFileReader
+        ///     Initializes a new instance of AudioFileReader
         /// </summary>
         /// <param name="fileName">The file to open</param>
         public AudioFileReader(string fileName)
         {
-            lockObject = new object();
             this.fileName = fileName;
             CreateReaderStream(fileName);
             sourceBytesPerSample = (readerStream.WaveFormat.BitsPerSample / 8) * readerStream.WaveFormat.Channels;
+            destBytesPerSample = 8; // stereo float
             sampleChannel = new SampleChannel(readerStream, false);
-            destBytesPerSample = 4*sampleChannel.WaveFormat.Channels;
             length = SourceToDest(readerStream.Length);
+            lockObject = new object();
         }
 
         /// <summary>
-        /// Creates the reader stream, supporting all filetypes in the core NAudio library,
-        /// and ensuring we are in PCM format
-        /// </summary>
-        /// <param name="fileName">File Name</param>
-        private void CreateReaderStream(string fileName)
-        {
-            if (fileName.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
-            {
-                readerStream = new WaveFileReader(fileName);
-                if (readerStream.WaveFormat.Encoding != WaveFormatEncoding.Pcm && readerStream.WaveFormat.Encoding != WaveFormatEncoding.IeeeFloat)
-                {
-                    readerStream = WaveFormatConversionStream.CreatePcmStream(readerStream);
-                    readerStream = new BlockAlignReductionStream(readerStream);
-                }
-            }
-            else if (fileName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
-            {
-                readerStream = new Mp3FileReader(fileName);
-            }
-            else if (fileName.EndsWith(".aiff"))
-            {
-                readerStream = new AiffFileReader(fileName);
-            }
-            else
-            {
-                // fall back to media foundation reader, see if that can play it
-                readerStream = new MediaFoundationReader(fileName);
-            }
-        }
-
-        /// <summary>
-        /// WaveFormat of this stream
-        /// </summary>
-        public override WaveFormat WaveFormat
-        {
-            get { return sampleChannel.WaveFormat; }
-        }
-
-        /// <summary>
-        /// Length of this stream (in bytes)
+        ///     Length of this stream (in bytes)
         /// </summary>
         public override long Length
         {
@@ -85,31 +46,39 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Position of this stream (in bytes)
+        ///     Position of this stream (in bytes)
         /// </summary>
         public override long Position
         {
             get { return SourceToDest(readerStream.Position); }
-            set { lock (lockObject) { readerStream.Position = DestToSource(value); }  }
+            set
+            {
+                lock (lockObject)
+                {
+                    readerStream.Position = DestToSource(value);
+                }
+            }
         }
 
         /// <summary>
-        /// Reads from this wave stream
+        ///     Gets or Sets the Volume of this AudioFileReader. 1.0f is full volume
         /// </summary>
-        /// <param name="buffer">Audio buffer</param>
-        /// <param name="offset">Offset into buffer</param>
-        /// <param name="count">Number of bytes required</param>
-        /// <returns>Number of bytes read</returns>
-        public override int Read(byte[] buffer, int offset, int count)
+        public float Volume
         {
-            var waveBuffer = new WaveBuffer(buffer);
-            int samplesRequired = count / 4;
-            int samplesRead = Read(waveBuffer.FloatBuffer, offset / 4, samplesRequired);
-            return samplesRead * 4;
+            get { return sampleChannel.Volume; }
+            set { sampleChannel.Volume = value; }
         }
 
         /// <summary>
-        /// Reads audio from this sample provider
+        ///     WaveFormat of this stream
+        /// </summary>
+        public override WaveFormat WaveFormat
+        {
+            get { return sampleChannel.WaveFormat; }
+        }
+
+        /// <summary>
+        ///     Reads audio from this sample provider
         /// </summary>
         /// <param name="buffer">Sample buffer</param>
         /// <param name="offset">Offset into sample buffer</param>
@@ -124,16 +93,49 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Gets or Sets the Volume of this AudioFileReader. 1.0f is full volume
+        ///     Creates the reader stream, supporting all filetypes in the core NAudio library,
+        ///     and ensuring we are in PCM format
         /// </summary>
-        public float Volume
+        /// <param name="fileName">File Name</param>
+        private void CreateReaderStream(string fileName)
         {
-            get { return sampleChannel.Volume; }
-            set { sampleChannel.Volume = value; } 
+            if (fileName.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+            {
+                readerStream = new WaveFileReader(fileName);
+                if (readerStream.WaveFormat.Encoding != WaveFormatEncoding.Pcm &&
+                    readerStream.WaveFormat.Encoding != WaveFormatEncoding.IeeeFloat)
+                {
+                    readerStream = WaveFormatConversionStream.CreatePcmStream(readerStream);
+                    readerStream = new BlockAlignReductionStream(readerStream);
+                }
+            }
+            else if (fileName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
+            {
+                readerStream = new Mp3FileReader(fileName);
+            }
+            else if (fileName.EndsWith(".aiff"))
+            {
+                readerStream = new AiffFileReader(fileName);
+            }
         }
 
         /// <summary>
-        /// Helper to convert source to dest bytes
+        ///     Reads from this wave stream
+        /// </summary>
+        /// <param name="buffer">Audio buffer</param>
+        /// <param name="offset">Offset into buffer</param>
+        /// <param name="count">Number of bytes required</param>
+        /// <returns>Number of bytes read</returns>
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            var waveBuffer = new WaveBuffer(buffer);
+            int samplesRequired = count / 4;
+            int samplesRead = Read(waveBuffer.FloatBuffer, offset / 4, samplesRequired);
+            return samplesRead * 4;
+        }
+
+        /// <summary>
+        ///     Helper to convert source to dest bytes
         /// </summary>
         private long SourceToDest(long sourceBytes)
         {
@@ -141,7 +143,7 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Helper to convert dest to source bytes
+        ///     Helper to convert dest to source bytes
         /// </summary>
         private long DestToSource(long destBytes)
         {
@@ -149,7 +151,7 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Disposes this AudioFileReader
+        ///     Disposes this AudioFileReader
         /// </summary>
         /// <param name="disposing">True if called from Dispose</param>
         protected override void Dispose(bool disposing)

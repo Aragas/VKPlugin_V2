@@ -1,45 +1,47 @@
 using System;
 using System.Runtime.InteropServices;
-using NAudio.Wave;
 
 namespace NAudio.Midi
 {
     internal class MidiInterop
     {
-
         public enum MidiInMessage
         {
             /// <summary>
             /// MIM_OPEN
             /// </summary>
             Open = 0x3C1,
+
             /// <summary>
             /// MIM_CLOSE
             /// </summary>
             Close = 0x3C2,
+
             /// <summary>
             /// MIM_DATA
             /// </summary>
             Data = 0x3C3,
+
             /// <summary>
             /// MIM_LONGDATA
             /// </summary>
             LongData = 0x3C4,
+
             /// <summary>
             /// MIM_ERROR
             /// </summary>
             Error = 0x3C5,
+
             /// <summary>
             /// MIM_LONGERROR
             /// </summary>
             LongError = 0x3C6,
+
             /// <summary>
             /// MIM_MOREDATA
             /// </summary>
             MoreData = 0x3CC,
         }
-
-
 
         public enum MidiOutMessage
         {
@@ -47,10 +49,12 @@ namespace NAudio.Midi
             /// MOM_OPEN
             /// </summary>
             Open = 0x3C7,
+
             /// <summary>
             /// MOM_CLOSE
             /// </summary>
             Close = 0x3C8,
+
             /// <summary>
             /// MOM_DONE
             /// </summary>
@@ -227,6 +231,7 @@ namespace NAudio.Midi
 
         // TODO: this is general MM interop
         public const int CALLBACK_FUNCTION = 0x30000;
+
         public const int CALLBACK_NULL = 0;
 
         // http://msdn.microsoft.com/en-us/library/dd757347%28VS.85%29.aspx
@@ -246,6 +251,7 @@ namespace NAudio.Midi
             public int dwDeltaTime;
             public int dwStreamID;
             public int dwEvent;
+
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
             public int dwParms;
         }
@@ -262,7 +268,8 @@ namespace NAudio.Midi
             public IntPtr lpNext; // struct mididhdr_tag *
             public IntPtr reserved; // DWORD_PTR
             public int dwOffset; // DWORD
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)] 
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
             public IntPtr[] dwReserved; // DWORD_PTR dwReserved[4]
         }
 

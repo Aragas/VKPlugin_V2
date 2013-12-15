@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NAudio.Utils;
+﻿using NAudio.Utils;
 
 namespace NAudio.Wave.SampleProviders
 {
-    class Stereo8SampleChunkConverter : ISampleChunkConverter
+    internal class Stereo8SampleChunkConverter : ISampleChunkConverter
     {
         private int offset;
         private byte[] sourceBuffer;
@@ -14,8 +11,8 @@ namespace NAudio.Wave.SampleProviders
         public bool Supports(WaveFormat waveFormat)
         {
             return waveFormat.Encoding == WaveFormatEncoding.Pcm &&
-                waveFormat.BitsPerSample == 8 &&
-                waveFormat.Channels == 2;
+                   waveFormat.BitsPerSample == 8 &&
+                   waveFormat.Channels == 2;
         }
 
         public void LoadNextChunk(IWaveProvider source, int samplePairsRequired)
@@ -34,12 +31,9 @@ namespace NAudio.Wave.SampleProviders
                 sampleRight = sourceBuffer[offset++] / 256f;
                 return true;
             }
-            else
-            {
-                sampleLeft = 0.0f;
-                sampleRight = 0.0f;
-                return false;
-            }
+            sampleLeft = 0.0f;
+            sampleRight = 0.0f;
+            return false;
         }
     }
 }

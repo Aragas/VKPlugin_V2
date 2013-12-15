@@ -1,53 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NAudio.CoreAudioApi;
-using System.Threading;
+﻿using NAudio.CoreAudioApi;
+using System;
 using System.Runtime.InteropServices;
-using System.Diagnostics;
+using System.Threading;
 
 namespace NAudio.Wave
 {
     /// <summary>
-    /// Support for playback using Wasapi
+    ///     Support for playback using Wasapi
     /// </summary>
-    public class WasapiOut : IWavePlayer, IWavePosition
+    public class WasapiOut : IWavePlayer
     {
-        private AudioClient audioClient;
-        private MMDevice mmDevice;
+        private readonly bool isUsingEventSync;
         private readonly AudioClientShareMode shareMode;
-        private AudioRenderClient renderClient;
-        private IWaveProvider sourceProvider;
-        private int latencyMilliseconds;
+        private readonly SynchronizationContext syncContext;
+        private AudioClient audioClient;
         private int bufferFrameCount;
         private int bytesPerFrame;
-        private readonly bool isUsingEventSync;
-        private EventWaitHandle frameEventWaitHandle;
-        private byte[] readBuffer;
-        private volatile PlaybackState playbackState;
-        private Thread playThread;
-        private WaveFormat outputFormat;
         private bool dmoResamplerNeeded;
-        private readonly SynchronizationContext syncContext;
-        
-        /// <summary>
-        /// Playback Stopped
-        /// </summary>
-        public event EventHandler<StoppedEventArgs> PlaybackStopped;
+        private EventWaitHandle frameEventWaitHandle;
+        private int latencyMilliseconds;
+        private WaveFormat outputFormat;
+        private Thread playThread;
+        private volatile PlaybackState playbackState;
+        private byte[] readBuffer;
+        private AudioRenderClient renderClient;
+        private IWaveProvider sourceProvider;
 
         /// <summary>
-        /// WASAPI Out using default audio endpoint
+        ///     WASAPI Out using default audio endpoint
         /// </summary>
         /// <param name="shareMode">ShareMode - shared or exclusive</param>
         /// <param name="latency">Desired latency in milliseconds</param>
         public WasapiOut(AudioClientShareMode shareMode, int latency) :
             this(GetDefaultAudioEndpoint(), shareMode, true, latency)
         {
-
         }
 
         /// <summary>
-        /// WASAPI Out using default audio endpoint
+        ///     WASAPI Out using default audio endpoint
         /// </summary>
         /// <param name="shareMode">ShareMode - shared or exclusive</param>
         /// <param name="useEventSync">true if sync is done with event. false use sleep.</param>
@@ -55,11 +45,10 @@ namespace NAudio.Wave
         public WasapiOut(AudioClientShareMode shareMode, bool useEventSync, int latency) :
             this(GetDefaultAudioEndpoint(), shareMode, useEventSync, latency)
         {
-
         }
 
         /// <summary>
-        /// Creates a new WASAPI Output
+        ///     Creates a new WASAPI Output
         /// </summary>
         /// <param name="device">Device to use</param>
         /// <param name="shareMode"></param>
@@ -67,32 +56,36 @@ namespace NAudio.Wave
         /// <param name="latency"></param>
         public WasapiOut(MMDevice device, AudioClientShareMode shareMode, bool useEventSync, int latency)
         {
-            this.audioClient = device.AudioClient;
-            this.mmDevice = device;
+            audioClient = device.AudioClient;
             this.shareMode = shareMode;
-            this.isUsingEventSync = useEventSync;
-            this.latencyMilliseconds = latency;
-            this.syncContext = SynchronizationContext.Current;
+            isUsingEventSync = useEventSync;
+            latencyMilliseconds = latency;
+            syncContext = SynchronizationContext.Current;
         }
 
-        static MMDevice GetDefaultAudioEndpoint()
+        /// <summary>
+        ///     Playback Stopped
+        /// </summary>
+        public event EventHandler<StoppedEventArgs> PlaybackStopped;
+
+        private static MMDevice GetDefaultAudioEndpoint()
         {
             if (Environment.OSVersion.Version.Major < 6)
             {
                 throw new NotSupportedException("WASAPI supported only on Windows Vista and above");
             }
-            MMDeviceEnumerator enumerator = new MMDeviceEnumerator();
+            var enumerator = new MMDeviceEnumerator();
             return enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
         }
 
         private void PlayThread()
         {
             ResamplerDmoStream resamplerDmoStream = null;
-            IWaveProvider playbackProvider = this.sourceProvider;
+            IWaveProvider playbackProvider = sourceProvider;
             Exception exception = null;
             try
             {
-                if (this.dmoResamplerNeeded)
+                if (dmoResamplerNeeded)
                 {
                     resamplerDmoStream = new ResamplerDmoStream(sourceProvider, outputFormat);
                     playbackProvider = resamplerDmoStream;
@@ -105,7 +98,7 @@ namespace NAudio.Wave
                 FillBuffer(playbackProvider, bufferFrameCount);
 
                 // Create WaitHandle for sync
-                WaitHandle[] waitHandles = new WaitHandle[] { frameEventWaitHandle };
+                WaitHandle[] waitHandles = { frameEventWaitHandle };
 
                 audioClient.Start();
 
@@ -130,7 +123,9 @@ namespace NAudio.Wave
                         if (isUsingEventSync)
                         {
                             // In exclusive mode, always ask the max = bufferFrameCount = audioClient.BufferSize
-                            numFramesPadding = (shareMode == AudioClientShareMode.Shared) ? audioClient.CurrentPadding : 0;
+                            numFramesPadding = (shareMode == AudioClientShareMode.Shared)
+                                ? audioClient.CurrentPadding
+                                : 0;
                         }
                         else
                         {
@@ -166,10 +161,10 @@ namespace NAudio.Wave
 
         private void RaisePlaybackStopped(Exception e)
         {
-            var handler = PlaybackStopped;
+            EventHandler<StoppedEventArgs> handler = PlaybackStopped;
             if (handler != null)
             {
-                if (this.syncContext == null)
+                if (syncContext == null)
                 {
                     handler(this, new StoppedEventArgs(e));
                 }
@@ -189,7 +184,7 @@ namespace NAudio.Wave
             {
                 playbackState = PlaybackState.Stopped;
             }
-            Marshal.Copy(readBuffer,0,buffer,read);
+            Marshal.Copy(readBuffer, 0, buffer, read);
             int actualFrameCount = read / bytesPerFrame;
             /*if (actualFrameCount != frameCount)
             {
@@ -198,33 +193,10 @@ namespace NAudio.Wave
             renderClient.ReleaseBuffer(actualFrameCount, AudioClientBufferFlags.None);
         }
 
-        /// <summary>
-        /// Gets the current position in bytes from the wave output device.
-        /// (n.b. this is not the same thing as the position within your reader
-        /// stream)
-        /// </summary>
-        /// <returns>Position in bytes</returns>
-        public long GetPosition()
-        {
-            if (playbackState == Wave.PlaybackState.Stopped)
-            {
-                return 0;
-            }
-            return (long)audioClient.AudioClockClient.AdjustedPosition;
-        }
-
-        /// <summary>
-        /// Gets a <see cref="Wave.WaveFormat"/> instance indicating the format the hardware is using.
-        /// </summary>
-        public WaveFormat OutputWaveFormat
-        {
-            get { return outputFormat; }
-        }
-
         #region IWavePlayer Members
 
         /// <summary>
-        /// Begin Playback
+        ///     Begin Playback
         /// </summary>
         public void Play()
         {
@@ -232,21 +204,16 @@ namespace NAudio.Wave
             {
                 if (playbackState == PlaybackState.Stopped)
                 {
-                    playThread = new Thread(new ThreadStart(PlayThread));
-                    playbackState = PlaybackState.Playing;
-                    playThread.Start();                    
-                }
-                else
-                {
-                    playbackState = PlaybackState.Playing;
+                    playThread = new Thread(PlayThread);
+                    playThread.Start();
                 }
 
-                
+                playbackState = PlaybackState.Playing;
             }
         }
 
         /// <summary>
-        /// Stop playback and flush buffers
+        ///     Stop playback and flush buffers
         /// </summary>
         public void Stop()
         {
@@ -259,7 +226,7 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Stop playback without flushing buffers
+        ///     Stop playback without flushing buffers
         /// </summary>
         public void Pause()
         {
@@ -267,11 +234,10 @@ namespace NAudio.Wave
             {
                 playbackState = PlaybackState.Paused;
             }
-            
         }
 
         /// <summary>
-        /// Initialize for playing the specified wave stream
+        ///     Initialize for playing the specified wave stream
         /// </summary>
         /// <param name="waveProvider">IWaveProvider to play</param>
         public void Init(IWaveProvider waveProvider)
@@ -283,36 +249,37 @@ namespace NAudio.Wave
             if (!audioClient.IsFormatSupported(shareMode, outputFormat, out closestSampleRateFormat))
             {
                 // Use closesSampleRateFormat (in sharedMode, it equals usualy to the audioClient.MixFormat)
-                // See documentation : http://msdn.microsoft.com/en-us/library/ms678737(VS.85).aspx 
+                // See documentation : http://msdn.microsoft.com/en-us/library/ms678737(VS.85).aspx
                 // They say : "In shared mode, the audio engine always supports the mix format"
                 // The MixFormat is more likely to be a WaveFormatExtensible.
                 if (closestSampleRateFormat == null)
                 {
                     WaveFormat correctSampleRateFormat = audioClient.MixFormat;
-                        /*WaveFormat.CreateIeeeFloatWaveFormat(
+                    /*WaveFormat.CreateIeeeFloatWaveFormat(
                         audioClient.MixFormat.SampleRate,
                         audioClient.MixFormat.Channels);*/
 
                     if (!audioClient.IsFormatSupported(shareMode, correctSampleRateFormat))
                     {
                         // Iterate from Worst to Best Format
-                        WaveFormatExtensible[] bestToWorstFormats = {
-                                  new WaveFormatExtensible(
-                                      outputFormat.SampleRate, 32,
-                                      outputFormat.Channels),
-                                  new WaveFormatExtensible(
-                                      outputFormat.SampleRate, 24,
-                                      outputFormat.Channels),
-                                  new WaveFormatExtensible(
-                                      outputFormat.SampleRate, 16,
-                                      outputFormat.Channels),
-                              };
+                        WaveFormatExtensible[] bestToWorstFormats =
+                        {
+                            new WaveFormatExtensible(
+                                outputFormat.SampleRate, 32,
+                                outputFormat.Channels),
+                            new WaveFormatExtensible(
+                                outputFormat.SampleRate, 24,
+                                outputFormat.Channels),
+                            new WaveFormatExtensible(
+                                outputFormat.SampleRate, 16,
+                                outputFormat.Channels)
+                        };
 
                         // Check from best Format to worst format ( Float32, Int24, Int16 )
-                        for (int i = 0; i < bestToWorstFormats.Length; i++ )
+                        for (int i = 0; i < bestToWorstFormats.Length; i++)
                         {
                             correctSampleRateFormat = bestToWorstFormats[i];
-                            if ( audioClient.IsFormatSupported(shareMode, correctSampleRateFormat) )
+                            if (audioClient.IsFormatSupported(shareMode, correctSampleRateFormat))
                             {
                                 break;
                             }
@@ -341,13 +308,13 @@ namespace NAudio.Wave
                 using (new ResamplerDmoStream(waveProvider, outputFormat))
                 {
                 }
-                this.dmoResamplerNeeded = true;
+                dmoResamplerNeeded = true;
             }
             else
             {
                 dmoResamplerNeeded = false;
             }
-            this.sourceProvider = waveProvider;
+            sourceProvider = waveProvider;
 
             // If using EventSync, setup is specific with shareMode
             if (isUsingEventSync)
@@ -365,19 +332,20 @@ namespace NAudio.Wave
                 else
                 {
                     // With EventCallBack and Exclusive, both latencies must equals
-                    audioClient.Initialize(shareMode, AudioClientStreamFlags.EventCallback, latencyRefTimes, latencyRefTimes,
-                                        outputFormat, Guid.Empty);
+                    audioClient.Initialize(shareMode, AudioClientStreamFlags.EventCallback, latencyRefTimes,
+                        latencyRefTimes,
+                        outputFormat, Guid.Empty);
                 }
 
                 // Create the Wait Event Handle
                 frameEventWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-                audioClient.SetEventHandle(frameEventWaitHandle.SafeWaitHandle.DangerousGetHandle());
+                audioClient.SetEventHandle(frameEventWaitHandle);
             }
             else
             {
                 // Normal setup for both sharedMode
                 audioClient.Initialize(shareMode, AudioClientStreamFlags.None, latencyRefTimes, 0,
-                                    outputFormat, Guid.Empty);
+                    outputFormat, Guid.Empty);
             }
 
             // Get the RenderClient
@@ -385,7 +353,7 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Playback State
+        ///     Playback State
         /// </summary>
         public PlaybackState PlaybackState
         {
@@ -393,28 +361,26 @@ namespace NAudio.Wave
         }
 
         /// <summary>
-        /// Volume
+        ///     Volume
         /// </summary>
         public float Volume
         {
-            get
-            {
-                return mmDevice.AudioEndpointVolume.MasterVolumeLevelScalar;                                
-            }
+            get { return 1.0f; }
             set
             {
-                if (value < 0) throw new ArgumentOutOfRangeException("value", "Volume must be between 0.0 and 1.0");
-                if (value > 1) throw new ArgumentOutOfRangeException("value", "Volume must be between 0.0 and 1.0");
-                mmDevice.AudioEndpointVolume.MasterVolumeLevelScalar = value;
+                if (value != 1.0f)
+                {
+                    throw new NotImplementedException();
+                }
             }
         }
 
-        #endregion
+        #endregion IWavePlayer Members
 
         #region IDisposable Members
 
         /// <summary>
-        /// Dispose
+        ///     Dispose
         /// </summary>
         public void Dispose()
         {
@@ -426,9 +392,8 @@ namespace NAudio.Wave
                 audioClient = null;
                 renderClient = null;
             }
-
         }
 
-        #endregion
+        #endregion IDisposable Members
     }
 }

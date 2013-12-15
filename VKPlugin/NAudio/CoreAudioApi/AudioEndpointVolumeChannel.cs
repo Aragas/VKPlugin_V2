@@ -20,21 +20,19 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using NAudio.CoreAudioApi.Interfaces;
+using System;
 using System.Runtime.InteropServices;
 
 namespace NAudio.CoreAudioApi
 {
     /// <summary>
-    /// Audio Endpoint Volume Channel
+    ///     Audio Endpoint Volume Channel
     /// </summary>
     public class AudioEndpointVolumeChannel
     {
-        private uint _Channel;
-        private IAudioEndpointVolume _AudioEndpointVolume;
+        private readonly IAudioEndpointVolume _AudioEndpointVolume;
+        private readonly uint _Channel;
 
         internal AudioEndpointVolumeChannel(IAudioEndpointVolume parent, int channel)
         {
@@ -43,24 +41,24 @@ namespace NAudio.CoreAudioApi
         }
 
         /// <summary>
-        /// Volume Level
+        ///     Volume Level
         /// </summary>
         public float VolumeLevel
         {
             get
             {
                 float result;
-                Marshal.ThrowExceptionForHR(_AudioEndpointVolume.GetChannelVolumeLevel(_Channel,out result));
+                Marshal.ThrowExceptionForHR(_AudioEndpointVolume.GetChannelVolumeLevel(_Channel, out result));
                 return result;
             }
             set
             {
-                Marshal.ThrowExceptionForHR(_AudioEndpointVolume.SetChannelVolumeLevel(_Channel, value,Guid.Empty));
+                Marshal.ThrowExceptionForHR(_AudioEndpointVolume.SetChannelVolumeLevel(_Channel, value, Guid.Empty));
             }
         }
 
         /// <summary>
-        /// Volume Level Scalar
+        ///     Volume Level Scalar
         /// </summary>
         public float VolumeLevelScalar
         {
@@ -75,6 +73,5 @@ namespace NAudio.CoreAudioApi
                 Marshal.ThrowExceptionForHR(_AudioEndpointVolume.SetChannelVolumeLevelScalar(_Channel, value, Guid.Empty));
             }
         }
-
     }
 }

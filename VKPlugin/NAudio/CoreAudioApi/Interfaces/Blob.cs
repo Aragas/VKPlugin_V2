@@ -20,23 +20,21 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 // Adapted for NAudio
+
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
 
 namespace NAudio.CoreAudioApi.Interfaces
 {
     internal struct Blob
     {
-        public int Length;
         public IntPtr Data;
+        public int Length;
 
-        //Code Should Compile at warning level4 without any warnings, 
-        //However this struct will give us Warning CS0649: Field [Fieldname] 
+        //Code Should Compile at warning level4 without any warnings,
+        //However this struct will give us Warning CS0649: Field [Fieldname]
         //is never assigned to, and will always have its default value
         //You can disable CS0649 in the project options but that will disable
-        //the warning for the whole project, it's a nice warning and we do want 
+        //the warning for the whole project, it's a nice warning and we do want
         //it in other places so we make a nice dummy function to keep the compiler
         //happy.
         private void FixCS0649()
@@ -46,4 +44,3 @@ namespace NAudio.CoreAudioApi.Interfaces
         }
     }
 }
-

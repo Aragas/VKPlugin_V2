@@ -3,13 +3,13 @@ using System;
 namespace NAudio.Dsp
 {
     /// <summary>
-    /// Summary description for FastFourierTransform.
+    ///     Summary description for FastFourierTransform.
     /// </summary>
     public class FastFourierTransform
     {
         /// <summary>
-        /// This computes an in-place complex-to-complex FFT 
-        /// x and y are the real and imaginary arrays of 2^m points.
+        ///     This computes an in-place complex-to-complex FFT
+        ///     x and y are the real and imaginary arrays of 2^m points.
         /// </summary>
         public static void FFT(bool forward, int m, Complex[] data)
         {
@@ -45,7 +45,7 @@ namespace NAudio.Dsp
                 j += k;
             }
 
-            // Compute the FFT 
+            // Compute the FFT
             c1 = -1.0f;
             c2 = 0.0f;
             l2 = 1;
@@ -77,7 +77,7 @@ namespace NAudio.Dsp
                 c1 = (float)Math.Sqrt((1.0f + c1) / 2.0f);
             }
 
-            // Scaling for forward transform 
+            // Scaling for forward transform
             if (forward)
             {
                 for (i = 0; i < n; i++)
@@ -87,9 +87,9 @@ namespace NAudio.Dsp
                 }
             }
         }
-        
+
         /// <summary>
-        /// Applies a Hamming Window
+        ///     Applies a Hamming Window
         /// </summary>
         /// <param name="n">Index into frame</param>
         /// <param name="frameSize">Frame size (e.g. 1024)</param>
@@ -100,7 +100,7 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Applies a Hann Window
+        ///     Applies a Hann Window
         /// </summary>
         /// <param name="n">Index into frame</param>
         /// <param name="frameSize">Frame size (e.g. 1024)</param>
@@ -111,14 +111,15 @@ namespace NAudio.Dsp
         }
 
         /// <summary>
-        /// Applies a Blackman-Harris Window
+        ///     Applies a Blackman-Harris Window
         /// </summary>
         /// <param name="n">Index into frame</param>
         /// <param name="frameSize">Frame size (e.g. 1024)</param>
         /// <returns>Multiplier for Blackmann-Harris window</returns>
         public static double BlackmannHarrisWindow(int n, int frameSize)
         {
-            return 0.35875 - (0.48829 * Math.Cos((2 * Math.PI * n) / (frameSize - 1))) + (0.14128 * Math.Cos((4 * Math.PI * n) / (frameSize - 1))) - (0.01168 * Math.Cos((6 * Math.PI * n) / (frameSize - 1)));
+            return 0.35875 - (0.48829 * Math.Cos((2 * Math.PI * n) / (frameSize - 1))) +
+                   (0.14128 * Math.Cos((4 * Math.PI * n) / (frameSize - 1))) - (0.01168 * Math.Cos((4 * Math.PI * n) / (frameSize - 1)));
         }
     }
 }

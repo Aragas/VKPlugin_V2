@@ -1,21 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NAudio.Wave.SampleProviders
 {
     /// <summary>
-    /// No nonsense mono to stereo provider, no volume adjustment,
-    /// just copies input to left and right. 
+    ///     No nonsense mono to stereo provider, no volume adjustment,
+    ///     just copies input to left and right.
     /// </summary>
     public class MonoToStereoSampleProvider : ISampleProvider
     {
-        private ISampleProvider source;
-        private WaveFormat waveFormat;
+        private readonly ISampleProvider source;
+        private readonly WaveFormat waveFormat;
         private float[] sourceBuffer;
 
         /// <summary>
-        /// Initializes a new instance of MonoToStereoSampleProvider
+        ///     Initializes a new instance of MonoToStereoSampleProvider
         /// </summary>
         /// <param name="source">Source sample provider</param>
         public MonoToStereoSampleProvider(ISampleProvider source)
@@ -25,19 +23,19 @@ namespace NAudio.Wave.SampleProviders
                 throw new ArgumentException("Source must be mono");
             }
             this.source = source;
-            this.waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(source.WaveFormat.SampleRate, 2);
+            waveFormat = WaveFormat.CreateIeeeFloatWaveFormat(source.WaveFormat.SampleRate, 2);
         }
 
         /// <summary>
-        /// WaveFormat of this provider
+        ///     WaveFormat of this provider
         /// </summary>
         public WaveFormat WaveFormat
         {
-            get { return this.waveFormat; }
+            get { return waveFormat; }
         }
 
         /// <summary>
-        /// Reads samples from this provider
+        ///     Reads samples from this provider
         /// </summary>
         /// <param name="buffer">Sample buffer</param>
         /// <param name="offset">Offset into sample buffer</param>
@@ -59,9 +57,9 @@ namespace NAudio.Wave.SampleProviders
 
         private void EnsureSourceBuffer(int count)
         {
-            if (this.sourceBuffer == null || this.sourceBuffer.Length < count)
+            if (sourceBuffer == null || sourceBuffer.Length < count)
             {
-                this.sourceBuffer = new float[count];
+                sourceBuffer = new float[count];
             }
         }
     }
