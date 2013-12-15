@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Xml;
+using Rainmeter.API;
 
 namespace Rainmeter.Methods
 {
@@ -30,6 +31,7 @@ namespace Rainmeter.Methods
             foreach (XmlNode node in nodeListError)
             {
                 if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2))
+                    RainmeterAPI.Log(RainmeterAPI.LogType.Error, "VKPlugin.dll Can't get messages count");
                     return 0;
             }
 

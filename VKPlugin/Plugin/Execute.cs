@@ -7,7 +7,6 @@ namespace Rainmeter.Plugin
     {
         public static void Start(string command)
         {
-#if DEBUG
             if (!OAuth.TokenIdExist)
             {
                 OAuth.OAuthRun();
@@ -17,25 +16,6 @@ namespace Rainmeter.Plugin
             {
                 Player.Execute(command);
             }
-#else
-            if (!OAuth.TokenIdExist)
-            {
-                try
-                {
-                    OAuth.OAuthRun();
-                    Player.Execute(command);
-                }
-                catch {}
-            }
-            else
-            {
-                try
-                {
-                    Player.Execute(command);
-                }
-                catch {}
-            }
-#endif
         }
     }
 }

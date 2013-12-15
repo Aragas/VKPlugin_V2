@@ -34,8 +34,6 @@ namespace Rainmeter.Plugin
             Status,
             Artist,
             Title,
-            NextArtist,
-            NextTitle,
             Duration,
             Position,
             State,
@@ -245,7 +243,7 @@ namespace Rainmeter.Plugin
                     break;
 
                 default:
-                    RainmeterAPI.Log(RainmeterAPI.LogType.Error, "VKOnline.dll Type=" + type + " not valid");
+                    RainmeterAPI.Log(RainmeterAPI.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
                     break;
             }
         }

@@ -172,6 +172,8 @@ namespace Rainmeter.AudioPlayer
             else if (command.Contains("SetVolume")) SetVolume(command.Remove(0, 10));
             else if (command.Contains("SetShuffle")) SetShuffle(command.Remove(0, 11));
             else if (command.Contains("SetRepeat")) SetRepeat(command.Remove(0, 10));
+            else RainmeterAPI.Log
+                (RainmeterAPI.LogType.Error, "VKPlugin.dll Invalid command");
         }
 
         /// <summary>
@@ -312,7 +314,7 @@ namespace Rainmeter.AudioPlayer
 
                 default:
                     RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetRepeat format error.");
+                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetRepeat format error");
                     break;
             }
         }
@@ -340,7 +342,7 @@ namespace Rainmeter.AudioPlayer
 
                 default:
                     RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetShuffle format error.");
+                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetShuffle format error");
                     break;
             }
         }
@@ -357,7 +359,7 @@ namespace Rainmeter.AudioPlayer
                 catch (FormatException)
                 {
                     RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetVolume format error");
+                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetVolume format error");
                 }
             }
             else if (value.StartsWith("-"))
@@ -370,7 +372,7 @@ namespace Rainmeter.AudioPlayer
                 catch (FormatException)
                 {
                     RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetVolume format error");
+                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetVolume format error");
                 }
             }
             else
@@ -382,7 +384,7 @@ namespace Rainmeter.AudioPlayer
                 catch (FormatException)
                 {
                     RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetVolume format error");
+                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetVolume format error");
                 }
             }
         }
