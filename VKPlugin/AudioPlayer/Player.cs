@@ -1,4 +1,5 @@
 ﻿using NAudio.Wave;
+using Rainmeter.API;
 using Rainmeter.Forms;
 using Rainmeter.Methods;
 using Rainmeter.Plugin;
@@ -120,11 +121,7 @@ namespace Rainmeter.AudioPlayer
         {
             get
             {
-                //if (Option == Playing.Ready)
-                //{
                 return Position / Duration;
-                //}
-                //return 0.0;
             }
         }
 
@@ -132,11 +129,17 @@ namespace Rainmeter.AudioPlayer
         {
             get
             {
-                if (_waveOut.PlaybackState == PlaybackState.Playing)
-                    return 1.0;
-                if (_waveOut.PlaybackState == PlaybackState.Paused)
-                    return 2.0;
-                return 0.0;
+                switch (_waveOut.PlaybackState)
+                {
+                    case PlaybackState.Playing:
+                        return 1.0;
+
+                    case PlaybackState.Paused:
+                        return 2.0;
+
+                    default:
+                        return 0.0;
+                }
             }
         }
 
@@ -183,11 +186,6 @@ namespace Rainmeter.AudioPlayer
             }
             else if (Shuffle)
             {
-                if (_waveOut.PlaybackState == PlaybackState.Stopped)
-                    return;
-                if (_numb > Array.Length)
-                    return;
-
                 var random = new Random();
                 _numb = random.Next(0, Array.Length);
 
@@ -199,8 +197,11 @@ namespace Rainmeter.AudioPlayer
 
         private static void Next()
         {
+            // Check if stopped.
             if (_waveOut.PlaybackState == PlaybackState.Stopped)
                 return;
+
+            // Check if we are at the end of our playlist.
             if (_numb >= Array.Length)
                 return;
 
@@ -267,24 +268,18 @@ namespace Rainmeter.AudioPlayer
                     break;
 
                 case Playing.Init:
-                    {
-                        //try
-                        //{
-                        PlayNew();
-                        //}
-                        //catch
-                        //{
-                        //    Debug.Write("Init Player Error");
-                        //}
-                    }
+                    PlayNew();
                     break;
             }
         }
 
         private static void Previous()
         {
+            // Check if stopped.
             if (_waveOut.PlaybackState == PlaybackState.Stopped)
                 return;
+
+            // Check if we are at the beginning of our playlist.
             if (_numb <= 0)
                 return;
 
@@ -314,6 +309,11 @@ namespace Rainmeter.AudioPlayer
                         Shuffle = false;
                     }
                     break;
+
+                default:
+                    RainmeterAPI.Log
+                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetRepeat format error.");
+                    break;
             }
         }
 
@@ -337,40 +337,54 @@ namespace Rainmeter.AudioPlayer
                         Repeat = false;
                     }
                     break;
+
+                default:
+                    RainmeterAPI.Log
+                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetShuffle format error.");
+                    break;
             }
         }
 
         private static void SetVolume(string value)
         {
-#if DEBUG
-            if (value.StartsWith("+") || value.StartsWith("-"))
-            {
-                value = value.Substring(1);
-                AudioStream.Volume += Convert.ToSingle(Convert.ToInt32(value) / 100);
-            }
-            else
-            {
-                AudioStream.Volume = Convert.ToSingle(Convert.ToInt32(value) / 100);
-            }
-#else
-            if (value.StartsWith("+") || value.StartsWith("-"))
+            if (value.StartsWith("+"))
             {
                 try
                 {
                     value = value.Substring(1);
-                    AudioStream.Volume += Convert.ToSingle(Convert.ToInt32(value) / 100);
+                    AudioStream.Volume += (float) Convert.ToInt32(value)/(float) 100;
                 }
-                catch { }
+                catch (FormatException)
+                {
+                    RainmeterAPI.Log
+                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetVolume format error");
+                }
+            }
+            else if (value.StartsWith("-"))
+            {
+                try
+                {
+                    value = value.Substring(1);
+                    AudioStream.Volume -= (float) Convert.ToInt32(value)/(float) 100;
+                }
+                catch (FormatException)
+                {
+                    RainmeterAPI.Log
+                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetVolume format error");
+                }
             }
             else
             {
                 try
                 {
-                    AudioStream.Volume = Convert.ToSingle(Convert.ToInt32(value) / 100);
+                    AudioStream.Volume = (float) Convert.ToInt32(value)/(float) 100;
                 }
-                catch { }
+                catch (FormatException)
+                {
+                    RainmeterAPI.Log
+                        (RainmeterAPI.LogType.Error, "VKOnline.dll SetVolume format error");
+                }
             }
-#endif
         }
 
         private static void Stop()
