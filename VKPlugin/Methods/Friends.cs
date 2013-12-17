@@ -25,12 +25,12 @@ namespace Rainmeter.Methods
         {
             string Document = string.Join("", List().ToArray());
 
-            XmlDocument doc0 = new XmlDocument();
+            var doc0 = new XmlDocument();
             if (Document == null)
                 return null;
             doc0.LoadXml(Document);
 
-            List<string> Users = new List<string>();
+            var Users = new List<string>();
 
             foreach (XmlNode node in doc0.SelectNodes("//user"))
             {
@@ -50,7 +50,7 @@ namespace Rainmeter.Methods
             string param = "uid=" + Id + "&order=hints" + "&fields=first_name,last_name,photo_50,online";
 
             //Получение документа.
-            XmlDocument doc = new XmlDocument();
+            var doc = new XmlDocument();
             doc.Load("https://api.vk.com/method/" + method + param + "&access_token=" + Token);
 
             #region ErrorCheck
@@ -72,7 +72,7 @@ namespace Rainmeter.Methods
 
             #region Filtering
 
-            List<string> list = new List<string>();
+            var list = new List<string>();
 
             // Фильтрация документа по параметру.
             XmlNodeList nodeList = root.SelectNodes("/response/user[online='1']");

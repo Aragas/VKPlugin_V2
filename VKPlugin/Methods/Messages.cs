@@ -17,7 +17,7 @@ namespace Rainmeter.Methods
             const string method = "account.getCounters.xml?";
             const string param = "&filter=messages";
 
-            XmlDocument doc = new XmlDocument();
+            var doc = new XmlDocument();
             doc.Load("https://api.vk.com/method/" + method + param + "&access_token=" + Token);
 
             #region ErrorCheck

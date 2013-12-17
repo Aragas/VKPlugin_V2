@@ -176,7 +176,7 @@ namespace Rainmeter.AudioPlayer
         }
 
         /// <summary>
-        ///     Check if audiofile has ended. If true, starts next file. Better put in a loop.
+        ///     Check if audio file has ended. If true, starts next file. Better put in a loop.
         /// </summary>
         public static void PlayNext()
         {
