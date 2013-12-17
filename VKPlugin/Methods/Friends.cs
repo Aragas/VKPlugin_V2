@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
-using Rainmeter.API;
+using Rainmeter.ErrorHandler;
 
 namespace Rainmeter.Methods
 {
@@ -64,7 +64,7 @@ namespace Rainmeter.Methods
             foreach (XmlNode node in nodeListError)
             {
                 if (node.OuterXml.Equals(checkerror) || node.OuterXml.Equals(checkerror2))
-                    RainmeterAPI.Log(RainmeterAPI.LogType.Error, "VKPlugin.dll Can't get friends list");
+                    Report.Friends.List();
                     return null;
             }
 

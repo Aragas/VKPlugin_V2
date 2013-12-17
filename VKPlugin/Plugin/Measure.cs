@@ -1,5 +1,6 @@
 ﻿using Rainmeter.API;
 using Rainmeter.AudioPlayer;
+using Rainmeter.ErrorHandler;
 using Rainmeter.Information;
 using System;
 
@@ -8,7 +9,6 @@ namespace Rainmeter.Plugin
     internal class Measure
     {
         public static RainmeterAPI RM;
-        private static string _path;
         private PlayerType _audioType;
         private FriendsType _friendsType;
         private Type _type;
@@ -52,13 +52,7 @@ namespace Rainmeter.Plugin
 
         public static string FriendsCount { get; private set; }
 
-        public static string Path
-        {
-            get
-            {
-                return _path;
-            }
-        }
+        public static string Path { get; private set; }
 
         /// <summary>
         /// Called by Rainmeter when a !CommandMeasure bang is sent to the measure.
@@ -132,70 +126,69 @@ namespace Rainmeter.Plugin
 
             Info.Update();
 
-            if (_path == null)
+            if (Path == null)
             {
                 string path = rm.ReadPath("PlayerType", "");
-                if (path != "")
+                if (!String.IsNullOrEmpty(path))
                 {
-                    string path1 = path.Replace("\\" + path.Split('\\')[7], "\\");
-                    _path = path1;
+                    Path = path.Replace("\\" + path.Split('\\')[7], "\\");
                 }
             }
 
             string playertype = rm.ReadString("PlayerType", "");
             string friendtype = rm.ReadString("FriendType", "");
             string type = rm.ReadString("Type", "");
-            switch (type.ToLowerInvariant())
+            switch (type.ToUpperInvariant())
             {
-                case "player":
+                case "PLAYER":
                     _type = Type.Player;
 
                     #region Player
 
-                    switch (playertype.ToLowerInvariant())
+                    switch (playertype.ToUpperInvariant())
                     {
-                        case "status":
+                        case "STATUS":
                             _audioType = PlayerType.Status;
                             break;
 
-                        case "state":
+                        case "STATE":
                             _audioType = PlayerType.State;
                             break;
 
-                        case "artist":
+                        case "ARTIST":
                             _audioType = PlayerType.Artist;
                             break;
 
-                        case "title":
+                        case "TITLE":
                             _audioType = PlayerType.Title;
                             break;
 
-                        case "duration":
+                        case "DURATION":
                             _audioType = PlayerType.Duration;
                             break;
 
-                        case "position":
+                        case "POSITION":
                             _audioType = PlayerType.Position;
                             break;
 
-                        case "repeat":
+                        case "REPEAT":
                             _audioType = PlayerType.Repeat;
                             break;
 
-                        case "shuffle":
+                        case "SHUFFLE":
                             _audioType = PlayerType.Shuffle;
                             break;
 
-                        case "volume":
+                        case "VOLUME":
                             _audioType = PlayerType.Volume;
                             break;
 
-                        case "progress":
+                        case "PROGRESS":
                             _audioType = PlayerType.Progress;
                             break;
 
                         default:
-                            RainmeterAPI.Log(RainmeterAPI.LogType.Error, "VKPlugin.dll PlayerType=" + playertype + " not valid");
+                            Report.Measure.WrongType(playertype);
                             break;
                     }
 
@@ -203,7 +196,7 @@ namespace Rainmeter.Plugin
 
                     break;
 
-                case "friends":
+                case "FRIENDS":
                     _type = Type.Friends;
                     if (FriendsCount == null)
                         FriendsCount = rm.ReadString("FriendsCount", "1");
@@ -211,26 +204,26 @@ namespace Rainmeter.Plugin
 
                     #region Friends
 
-                    switch (friendtype.ToLowerInvariant())
+                    switch (friendtype.ToUpperInvariant())
                     {
-                        case "name":
+                        case "NAME":
                             _friendsType = FriendsType.Name;
                             break;
 
-                        case "photo":
+                        case "PHOTO":
                             _friendsType = FriendsType.Photo;
                             break;
 
-                        case "id":
+                        case "ID":
                             _friendsType = FriendsType.Id;
                             break;
 
-                        case "status":
+                        case "STATUS":
                             _friendsType = FriendsType.Status;
                             break;
 
                         default:
-                            RainmeterAPI.Log(RainmeterAPI.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
+                            Report.Measure.WrongType(friendtype);
                             break;
                     }
 
@@ -238,12 +231,12 @@ namespace Rainmeter.Plugin
 
                     break;
 
-                case "messages":
+                case "MESSAGES":
                     _type = Type.Messages;
                     break;
 
                 default:
-                    RainmeterAPI.Log(RainmeterAPI.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
+                    Report.Measure.WrongType(type);
                     break;
             }
         }

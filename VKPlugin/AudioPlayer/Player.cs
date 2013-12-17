@@ -1,5 +1,5 @@
 ﻿using NAudio.Wave;
-using Rainmeter.API;
+using Rainmeter.ErrorHandler;
 using Rainmeter.Forms;
 using Rainmeter.Methods;
 using Rainmeter.Plugin;
@@ -172,8 +172,7 @@ namespace Rainmeter.AudioPlayer
             else if (command.Contains("SetVolume")) SetVolume(command.Remove(0, 10));
             else if (command.Contains("SetShuffle")) SetShuffle(command.Remove(0, 11));
             else if (command.Contains("SetRepeat")) SetRepeat(command.Remove(0, 10));
-            else RainmeterAPI.Log
-                (RainmeterAPI.LogType.Error, "VKPlugin.dll Invalid command");
+            else Report.Player.Command();
         }
 
         /// <summary>
@@ -313,8 +312,7 @@ namespace Rainmeter.AudioPlayer
                     break;
 
                 default:
-                    RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetRepeat format error");
+                    Report.Player.SetRepeat();
                     break;
             }
         }
@@ -341,8 +339,7 @@ namespace Rainmeter.AudioPlayer
                     break;
 
                 default:
-                    RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetShuffle format error");
+                    Report.Player.SetShuffle();
                     break;
             }
         }
@@ -358,8 +355,7 @@ namespace Rainmeter.AudioPlayer
                 }
                 catch (FormatException)
                 {
-                    RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetVolume format error");
+                    Report.Player.SetVolume();
                 }
             }
             else if (value.StartsWith("-"))
@@ -371,8 +367,7 @@ namespace Rainmeter.AudioPlayer
                 }
                 catch (FormatException)
                 {
-                    RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetVolume format error");
+                    Report.Player.SetVolume();
                 }
             }
             else
@@ -383,8 +378,7 @@ namespace Rainmeter.AudioPlayer
                 }
                 catch (FormatException)
                 {
-                    RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKPlugin.dll SetVolume format error");
+                    Report.Player.SetVolume();
                 }
             }
         }
