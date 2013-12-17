@@ -188,7 +188,8 @@ namespace Rainmeter.Plugin
                             break;
 
                         default:
-                            Report.Measure.WrongType(playertype);
+                            RainmeterAPI.Log
+                                (RainmeterAPI.LogType.Error, "VKPlugin.dll PlayerType=" + playertype + " not valid");
                             break;
                     }
 
@@ -223,7 +224,8 @@ namespace Rainmeter.Plugin
                             break;
 
                         default:
-                            Report.Measure.WrongType(friendtype);
+                            RainmeterAPI.Log
+                                (RainmeterAPI.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
                             break;
                     }
 
@@ -236,7 +238,8 @@ namespace Rainmeter.Plugin
                     break;
 
                 default:
-                    Report.Measure.WrongType(type);
+                    RainmeterAPI.Log
+                        (RainmeterAPI.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
                     break;
             }
         }

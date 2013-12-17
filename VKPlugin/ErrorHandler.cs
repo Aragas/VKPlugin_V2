@@ -30,14 +30,6 @@ namespace Rainmeter.ErrorHandler
             }
         }
 
-        public static class Measure
-        {
-            public static void WrongType(string type)
-            {
-                RainmeterAPI.Log(RainmeterAPI.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
-            }
-        }
-
         public static class Messages
         {
             public static void Count()
