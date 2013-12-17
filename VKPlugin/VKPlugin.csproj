@@ -230,12 +230,10 @@
     <Compile Include="NAudio\Midi\MidiEventCollection.cs" />
     <Compile Include="NAudio\Midi\MidiEventComparer.cs" />
     <Compile Include="NAudio\Midi\MidiFile.cs" />
-    <Compile Include="NAudio\Midi\MidiIn.cs" />
     <Compile Include="NAudio\Midi\MidiInCapabilities.cs" />
     <Compile Include="NAudio\Midi\MidiInMessageEventArgs.cs" />
     <Compile Include="NAudio\Midi\MidiInterop.cs" />
     <Compile Include="NAudio\Midi\MidiMessage.cs" />
-    <Compile Include="NAudio\Midi\MidiOut.cs" />
     <Compile Include="NAudio\Midi\MidiOutCapabilities.cs" />
     <Compile Include="NAudio\Midi\MidiOutTechnology.cs" />
     <Compile Include="NAudio\Midi\NoteEvent.cs" />
@@ -358,7 +356,6 @@
     <Compile Include="NAudio\Wave\WaveFormats\OggWaveFormat.cs" />
     <Compile Include="NAudio\Wave\WaveFormats\TrueSpeechWaveFormat.cs" />
     <Compile Include="NAudio\Wave\WaveFormats\WaveFormat.cs" />
-    <Compile Include="NAudio\Wave\WaveFormats\WaveFormatCustomMarshaler.cs" />
     <Compile Include="NAudio\Wave\WaveFormats\WaveFormatEncoding.cs" />
     <Compile Include="NAudio\Wave\WaveFormats\WaveFormatExtensible.cs" />
     <Compile Include="NAudio\Wave\WaveFormats\WaveFormatExtraData.cs" />
