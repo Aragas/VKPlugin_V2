@@ -13,21 +13,23 @@ namespace Rainmeter.AudioPlayer
 {
     // To do:
     // Save mp3 to disk while playing from url.
-    // Check if mp3 is saved and play local. !!!
-    // Play next mp3 after previous (find better method). !!!
-    // Optimize download function. !!!
+    // Check if mp3 is saved and play local. !!! (Done)
+    // Play next mp3 after previous (find better method). !!! (Maybe in another life)
+    // Optimize download function. Then will work SetPosition. !!! (Maybe in another life)
 
     public static class Player
     {
         internal static WaveChannel32 AudioStream;
         internal static Playing Option = Playing.Init;
+
+        private static readonly MMDevice DefaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
+            (DataFlow.Render, Role.Multimedia);
+
         private static Audio _audio;
         private static Thread _checkThread;
         private static GetFile _gFile = new GetFile();
         private static GetStream _gStream = new GetStream();
         private static WaveOut _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
-        private static MMDevice defaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
-            (DataFlow.Render, Role.Multimedia);
 
         internal enum Playing
         {
@@ -72,6 +74,14 @@ namespace Rainmeter.AudioPlayer
             get
             {
                 return Array[_numb].Split('#')[4];
+            }
+        }
+
+        private static string FileName
+        {
+            get
+            {
+                return Reverse(Reverse(Array[_numb].Split('#')[4]).Split('/')[0]);
             }
         }
 
@@ -242,7 +252,7 @@ namespace Rainmeter.AudioPlayer
                 _waveOut.Init(_gStream.Wave(Url));
             }
 
-            AudioStream.Volume = defaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
+            AudioStream.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
 
             CheckPlayer();
 
@@ -438,13 +448,16 @@ namespace Rainmeter.AudioPlayer
             }
         }
 
-        private static string FilePath
+        public static string FilePath
         {
             get
             {
-                string filename = _numb.ToString() + ".mp3";
                 string path = Measure.Path + "Music\\";
-                return path + filename;
+
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+
+                return path + FileName;
             }
         }
 
@@ -485,6 +498,13 @@ namespace Rainmeter.AudioPlayer
                 _gFile.Dispose();
             }
         }
+
+        private static string Reverse(string s)
+        {
+            char[] charArray = s.ToCharArray();
+            System.Array.Reverse(charArray);
+            return new string(charArray);
+        }
     }
 
     internal class GetFile : IDisposable
@@ -519,12 +539,16 @@ namespace Rainmeter.AudioPlayer
     {
         private readonly Thread _downloadThread;
         private readonly Stream _ms = new MemoryStream();
+        private readonly Stream _ms1 = new MemoryStream();
         private WaveChannel32 _channel;
         private Mp3FileReader _reader;
 
         public GetStream()
         {
-            _downloadThread = new Thread(Download);
+            //if (Player.Save)
+            //    _downloadThread = new Thread(DownloadSave);
+            //else
+                _downloadThread = new Thread(Download);
         }
 
         private string Url { get; set; }
@@ -587,5 +611,41 @@ namespace Rainmeter.AudioPlayer
                 }
             }
         }
+
+        private void DownloadSave()
+        {
+            WebResponse response = WebRequest.Create(Url).GetResponse();
+            using (Stream stream = response.GetResponseStream())
+            {
+                var buffer = new byte[32768]; // 32Kb chunks
+                int read;
+                while (stream != null && (read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    long pos = _ms.Position;
+                    _ms.Position = _ms.Length;
+                    _ms1.Position = _ms1.Length;
+                    _ms.Write(buffer, 0, read);
+                    _ms1.Write(buffer, 0, read);
+                    _ms.Position = pos;
+                    _ms1.Position = pos;
+                }
+
+                using (Stream file = File.OpenWrite(Player.FilePath))
+                {
+                    CopyStream(_ms1, file);
+                }
+            }
+        }
+
+        private static void CopyStream(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[8 * 1024];
+            int read;
+            while (input != null && (read = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, read);
+            }
+        }
     }
+
 }
