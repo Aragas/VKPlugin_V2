@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using NAudio.CoreAudioApi;
+using NAudio.Wave;
 using Rainmeter.ErrorHandler;
 using Rainmeter.Forms;
 using Rainmeter.Methods;
@@ -25,6 +26,8 @@ namespace Rainmeter.AudioPlayer
         private static GetFile _gFile = new GetFile();
         private static GetStream _gStream = new GetStream();
         private static WaveOut _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
+        private static MMDevice defaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
+            (DataFlow.Render, Role.Multimedia);
 
         internal enum Playing
         {
@@ -239,7 +242,7 @@ namespace Rainmeter.AudioPlayer
                 _waveOut.Init(_gStream.Wave(Url));
             }
 
-            AudioStream.Volume = 0.15F;
+            AudioStream.Volume = defaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
 
             CheckPlayer();
 

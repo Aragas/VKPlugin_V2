@@ -118,6 +118,10 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NAudio\CoreAudioApi\MMDevice.cs" />
+    <Compile Include="NAudio\CoreAudioApi\MMDeviceCollection.cs" />
+    <Compile Include="NAudio\CoreAudioApi\MMDeviceEnumerator.cs" />
+    <Compile Include="NAudio\Wave\WaveFormats\WaveFormatCustomMarshale.cs" />
     <Compile Include="NAudio\Wave\WaveStreams\Mp3FileReader.cs" />
     <Compile Include="NAudio\FileFormats\Mp3\Mp3Frame.cs" />
     <Compile Include="API\DllExport.cs" />
@@ -164,9 +168,6 @@
     <Compile Include="NAudio\CoreAudioApi\Interfaces\IPropertyStore.cs" />
     <Compile Include="NAudio\CoreAudioApi\Interfaces\MMDeviceEnumeratorComObject.cs" />
     <Compile Include="NAudio\CoreAudioApi\Interfaces\StorageAccessMode.cs" />
-    <Compile Include="NAudio\CoreAudioApi\MMDevice.cs" />
-    <Compile Include="NAudio\CoreAudioApi\MMDeviceCollection.cs" />
-    <Compile Include="NAudio\CoreAudioApi\MMDeviceEnumerator.cs" />
     <Compile Include="NAudio\CoreAudioApi\PropertyKey.cs" />
     <Compile Include="NAudio\CoreAudioApi\PropertyKeys.cs" />
     <Compile Include="NAudio\CoreAudioApi\PropertyStore.cs" />
