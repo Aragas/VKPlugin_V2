@@ -164,11 +164,11 @@ namespace Rainmeter.AudioPlayer
             }
         }
         
-        public static bool Save
+        public static bool SaveAudio
         {
        			get
         		{
-        			return false;
+        			return Measure.SaveAudio;
         		}
         }
 
