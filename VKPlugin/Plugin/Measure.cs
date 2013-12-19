@@ -53,6 +53,8 @@ namespace Rainmeter.Plugin
         public static string FriendsCount { get; private set; }
 
         public static string Path { get; private set; }
+        
+        public static bool SaveAudio { get; private set; }
 
         /// <summary>
         /// Called by Rainmeter when a !CommandMeasure bang is sent to the measure.
@@ -142,6 +144,7 @@ namespace Rainmeter.Plugin
             {
                 case "PLAYER":
                     _type = Type.Player;
+                    SaveAudio = rm.ReadString ("SaveAudio", "False").ToLowerInvariant()
 
                     #region Player
 
