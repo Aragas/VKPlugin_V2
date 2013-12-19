@@ -163,6 +163,14 @@ namespace Rainmeter.AudioPlayer
                 return Array[_numb].Split('#')[2];
             }
         }
+        
+        public static bool Save
+        {
+       			get
+        		{
+        			return false;
+        		}
+        }
 
         #endregion Variables
 
@@ -545,9 +553,9 @@ namespace Rainmeter.AudioPlayer
 
         public GetStream()
         {
-            //if (Player.Save)
-            //    _downloadThread = new Thread(DownloadSave);
-            //else
+            if (Player.Save)
+                _downloadThread = new Thread(DownloadSave);
+            else
                 _downloadThread = new Thread(Download);
         }
 
@@ -578,14 +586,14 @@ namespace Rainmeter.AudioPlayer
                 _downloadThread.Start();
 
             // Pre-buffering some data to allow NAudio to start playing
-            while (_ms.Length < 32768 * 8)
+            while (_ms.Length < 32 * 1024 * 8)
             {
                 Player.Option = Player.Playing.Buffering;
 
                 Thread.Sleep(100); //Find better method.
             }
 
-            if (_ms.Length > 32768 * 8)
+            if (_ms.Length > 32 * 1024 * 8)
                 Player.Option = Player.Playing.Ready;
 
             _ms.Position = 0;
@@ -600,7 +608,7 @@ namespace Rainmeter.AudioPlayer
             WebResponse response = WebRequest.Create(Url).GetResponse();
             using (Stream stream = response.GetResponseStream())
             {
-                var buffer = new byte[32768]; // 32Kb chunks
+                var buffer = new byte[32 * 1024]; // 32Kb chunks
                 int read;
                 while (stream != null && (read = stream.Read(buffer, 0, buffer.Length)) > 0)
                 {
@@ -617,7 +625,7 @@ namespace Rainmeter.AudioPlayer
             WebResponse response = WebRequest.Create(Url).GetResponse();
             using (Stream stream = response.GetResponseStream())
             {
-                var buffer = new byte[32768]; // 32Kb chunks
+                var buffer = new byte[32 * 1024]; // 32Kb chunks
                 int read;
                 while (stream != null && (read = stream.Read(buffer, 0, buffer.Length)) > 0)
                 {
@@ -639,7 +647,7 @@ namespace Rainmeter.AudioPlayer
 
         private static void CopyStream(Stream input, Stream output)
         {
-            byte[] buffer = new byte[8 * 1024];
+            byte[] buffer = new byte[32 * 1024];
             int read;
             while (input != null && (read = input.Read(buffer, 0, buffer.Length)) > 0)
             {
