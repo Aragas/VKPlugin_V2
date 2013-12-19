@@ -1,6 +1,5 @@
 ﻿using Rainmeter.API;
 using Rainmeter.AudioPlayer;
-using Rainmeter.ErrorHandler;
 using Rainmeter.Information;
 using System;
 
@@ -31,7 +30,7 @@ namespace Rainmeter.Plugin
 
         private enum PlayerType
         {
-            Status,
+            Settings,
             Artist,
             Title,
             Duration,
@@ -98,7 +97,7 @@ namespace Rainmeter.Plugin
 
                     switch (_audioType)
                     {
-                        case PlayerType.Status:
+                        case PlayerType.Settings:
                             return "VKPlayer by Aragas (Aragasas)";
 
                         case PlayerType.Artist:
@@ -149,10 +148,10 @@ namespace Rainmeter.Plugin
 
                     switch (playertype.ToUpperInvariant())
                     {
-                        case "STATUS":
-                            _audioType = PlayerType.Status;
+                        case "SETTINGS":
+                            _audioType = PlayerType.Settings;
                             if (SaveAudio == null)
-                                SaveAudio = rm.ReadString("SaveAudio", "False").ToLowerInvariant();
+                                SaveAudio = rm.ReadString("SaveAudio", "FALSE").ToUpperInvariant();
                             break;
 
                         case "STATE":
