@@ -12,7 +12,7 @@ using System.Threading;
 namespace Rainmeter.AudioPlayer
 {
     // To do:
-    // Save mp3 to disk while playing from url.
+    // Save mp3 to disk while playing from url. (Done).
     // Check if mp3 is saved and play local. !!! (Done)
     // Play next mp3 after previous (find better method). !!! (Maybe in another life)
     // Optimize download function. Then will work SetPosition. !!! (Maybe in another life)
@@ -65,6 +65,14 @@ namespace Rainmeter.AudioPlayer
             get { return _array != null; }
         }
 
+        private static string FileName
+        {
+            get
+            {
+                return Reverse(Reverse(Array[_numb].Split('#')[4]).Split('/')[0]);
+            }
+        }
+
         private static string Id { get { return OAuth.Id; } }
 
         private static string Token { get { return OAuth.Token; } }
@@ -74,14 +82,6 @@ namespace Rainmeter.AudioPlayer
             get
             {
                 return Array[_numb].Split('#')[4];
-            }
-        }
-
-        private static string FileName
-        {
-            get
-            {
-                return Reverse(Reverse(Array[_numb].Split('#')[4]).Split('/')[0]);
             }
         }
 
@@ -138,6 +138,14 @@ namespace Rainmeter.AudioPlayer
             }
         }
 
+        public static bool SaveAudio
+        {
+            get
+            {
+                return Convert.ToBoolean(Measure.SaveAudio);
+            }
+        }
+
         public static double State
         {
             get
@@ -162,14 +170,6 @@ namespace Rainmeter.AudioPlayer
             {
                 return Array[_numb].Split('#')[2];
             }
-        }
-        
-        public static bool SaveAudio
-        {
-       			get
-        		{
-        			return Measure.SaveAudio;
-        		}
         }
 
         #endregion Variables
@@ -448,14 +448,6 @@ namespace Rainmeter.AudioPlayer
 
         #region File
 
-        private static bool FileExists
-        {
-            get
-            {
-                return (File.Exists(FilePath));
-            }
-        }
-
         public static string FilePath
         {
             get
@@ -466,6 +458,14 @@ namespace Rainmeter.AudioPlayer
                     Directory.CreateDirectory(path);
 
                 return path + FileName;
+            }
+        }
+
+        private static bool FileExists
+        {
+            get
+            {
+                return (File.Exists(FilePath));
             }
         }
 
@@ -553,10 +553,7 @@ namespace Rainmeter.AudioPlayer
 
         public GetStream()
         {
-            if (Player.Save)
-                _downloadThread = new Thread(DownloadSave);
-            else
-                _downloadThread = new Thread(Download);
+            _downloadThread = Player.SaveAudio ? new Thread(DownloadSave) : new Thread(Download);
         }
 
         private string Url { get; set; }
@@ -603,6 +600,16 @@ namespace Rainmeter.AudioPlayer
             return Player.AudioStream;
         }
 
+        private void CopyStream(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[32 * 1024];
+            int read;
+            while (input != null && (read = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, read);
+            }
+        }
+
         private void Download()
         {
             WebResponse response = WebRequest.Create(Url).GetResponse();
@@ -644,16 +651,5 @@ namespace Rainmeter.AudioPlayer
                 }
             }
         }
-
-        private static void CopyStream(Stream input, Stream output)
-        {
-            byte[] buffer = new byte[32 * 1024];
-            int read;
-            while (input != null && (read = input.Read(buffer, 0, buffer.Length)) > 0)
-            {
-                output.Write(buffer, 0, read);
-            }
-        }
     }
-
 }
