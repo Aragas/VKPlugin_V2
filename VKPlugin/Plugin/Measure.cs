@@ -129,7 +129,7 @@ namespace Rainmeter.Plugin
 
             Info.Update();
 
-            if (Path == null)
+            if (Path == null && !String.IsNullOrEmpty(path))
                 Path = path.Replace("\\" + path.Split('\\')[7], "\\");
 
             switch (type.ToUpperInvariant())

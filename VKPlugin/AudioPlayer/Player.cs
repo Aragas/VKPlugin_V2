@@ -26,7 +26,6 @@ namespace Rainmeter.AudioPlayer
             (DataFlow.Render, Role.Multimedia);
 
         private static Audio _audio; 
-        private static Thread _checkThread;
         private static GetFile _gFile = new GetFile();
         private static GetStream _gStream = new GetStream();
         private static WaveOut _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
@@ -447,9 +446,6 @@ namespace Rainmeter.AudioPlayer
             {
                 AudioStream.Dispose();
             }
-
-            if (_checkThread.IsAlive)
-                _checkThread.Abort();
         }
 
         private static void DisposeAll()
