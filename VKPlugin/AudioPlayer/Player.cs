@@ -25,7 +25,7 @@ namespace Rainmeter.AudioPlayer
         private static readonly MMDevice DefaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
             (DataFlow.Render, Role.Multimedia);
 
-        private static Audio _audio;
+        private static Audio _audio; 
         private static Thread _checkThread;
         private static GetFile _gFile = new GetFile();
         private static GetStream _gStream = new GetStream();
@@ -262,8 +262,6 @@ namespace Rainmeter.AudioPlayer
 
             AudioStream.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
 
-            CheckPlayer();
-
             _waveOut.Play();
         }
 
@@ -410,41 +408,6 @@ namespace Rainmeter.AudioPlayer
         }
 
         #endregion Execute
-
-        #region Check
-
-        private static void Check()
-        {
-            // try catch is used because if we make ReadString to a closed RM it will make an APPCRASH.
-            try
-            {
-                while (Measure.RM.ReadString("PlayerType", "") != "")
-                {
-                    Thread.Sleep(2000);
-                }
-            }
-            catch
-            {
-                Dispose();
-            }
-        }
-
-        private static void CheckPlayer()
-        {
-            if (_checkThread == null)
-            {
-                _checkThread = new Thread(Check);
-                _checkThread.Start();
-            }
-
-            if (!_checkThread.IsAlive)
-            {
-                _checkThread = new Thread(Check);
-                _checkThread.Start();
-            }
-        }
-
-        #endregion Check
 
         #region File
 

@@ -17,6 +17,7 @@ namespace Rainmeter.API
         [DllExport]
         public static unsafe void Finalize(void* data)
         {
+            Measure.Dispose();
             var id = (uint)data;
             Measures.Remove(id);
         }

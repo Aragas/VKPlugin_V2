@@ -7,7 +7,6 @@ namespace Rainmeter.Plugin
 {
     internal class Measure
     {
-        public static RainmeterAPI RM;
         private PlayerType _audioType;
         private FriendsType _friendsType;
         private Type _type;
@@ -123,22 +122,16 @@ namespace Rainmeter.Plugin
         /// <param name="maxValue">Max Value</param>
         internal void Reload(RainmeterAPI rm, ref double maxValue)
         {
-            RM = rm;
+            string path = rm.ReadPath("PlayerType", "");
+            string playertype = rm.ReadString("PlayerType", "");
+            string friendtype = rm.ReadString("FriendType", "");
+            string type = rm.ReadString("Type", "");
 
             Info.Update();
 
             if (Path == null)
-            {
-                string path = rm.ReadPath("PlayerType", "");
-                if (!String.IsNullOrEmpty(path))
-                {
-                    Path = path.Replace("\\" + path.Split('\\')[7], "\\");
-                }
-            }
+                Path = path.Replace("\\" + path.Split('\\')[7], "\\");
 
-            string playertype = rm.ReadString("PlayerType", "");
-            string friendtype = rm.ReadString("FriendType", "");
-            string type = rm.ReadString("Type", "");
             switch (type.ToUpperInvariant())
             {
                 case "PLAYER":
@@ -289,6 +282,11 @@ namespace Rainmeter.Plugin
                     break;
             }
             return 0.0;
+        }
+
+        internal static void Dispose()
+        {
+            Player.Dispose();
         }
     }
 }
