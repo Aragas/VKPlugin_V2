@@ -1,33 +1,38 @@
 ﻿using Rainmeter.API;
 using Rainmeter.AudioPlayer;
+using Rainmeter.Forms;
 using Rainmeter.Information;
 using System;
+using System.Threading;
 
 namespace Rainmeter.Plugin
 {
     internal class Measure
     {
-        private PlayerType _audioType;
-        private FriendsType _friendsType;
-        private Type _type;
-        private int _userType = 1;
+        public static string FriendsCount { get; private set; }
+        public static string Path { get; private set; }
+        public static string SaveAudio { get; private set; }
 
-        /// <summary>
-        /// Called when a measure is created (i.e. when Rainmeter is launched or when a skin is refreshed). Initialize your measure object here.
-        /// </summary>
-        internal Measure()
+        int _userType;
+
+        enum Type
         {
+            Player,
+            Friends,
+            Messages
         }
+        Type _type;
 
-        private enum FriendsType
+        enum FriendsType
         {
             Name,
             Photo,
             Id,
             Status
         }
+        FriendsType _friendsType;
 
-        private enum PlayerType
+        enum PlayerType
         {
             Settings,
             Artist,
@@ -40,77 +45,15 @@ namespace Rainmeter.Plugin
             Volume,
             Progress
         }
-
-        private enum Type
-        {
-            Player,
-            Friends,
-            Messages
-        }
-
-        public static string FriendsCount { get; private set; }
-
-        public static string Path { get; private set; }
-        
-        public static string SaveAudio { get; private set; }
+        PlayerType _audioType;
 
         /// <summary>
-        /// Called by Rainmeter when a !CommandMeasure bang is sent to the measure.
+        /// Called when a measure is created (i.e. when Rainmeter is launched or when a skin is refreshed). 
+        /// Initialize your measure object here.
         /// </summary>
-        /// <param name="args">String containing the arguments to parse.</param>
-        internal static void ExecuteBang(string command)
+        internal Measure()
         {
-            Execute.Start(command);
-        }
-
-        internal string GetString()
-        {
-            switch (_type)
-            {
-                case Type.Friends:
-
-                    #region Friends
-
-                    switch (_friendsType)
-                    {
-                        case FriendsType.Name:
-                            return Info.FriendsUserData(_userType)[0];
-
-                        case FriendsType.Photo:
-                            return Info.FriendsUserData(_userType)[2];
-
-                        case FriendsType.Id:
-                            return Info.FriendsUserData(_userType)[1];
-
-                        case FriendsType.Status:
-                            return Info.FriendsUserData(_userType)[3];
-                    }
-
-                    #endregion Friends
-
-                    break;
-
-                case Type.Player:
-
-                    #region Player
-
-                    switch (_audioType)
-                    {
-                        case PlayerType.Settings:
-                            return "VKPlayer by Aragas (Aragasas)";
-
-                        case PlayerType.Artist:
-                            return Player.Artist ?? "Not Authorized";
-
-                        case PlayerType.Title:
-                            return Player.Title ?? "Click Play";
-                    }
-
-                    #endregion Player
-
-                    break;
-            }
-            return null;
+            _userType = 1;
         }
 
         /// <summary>
@@ -127,7 +70,7 @@ namespace Rainmeter.Plugin
             string friendtype = rm.ReadString("FriendType", "");
             string type = rm.ReadString("Type", "");
 
-            Info.Update();
+            Info.Reload();
 
             if (Path == null && !String.IsNullOrEmpty(path))
                 Path = path.Replace("\\" + path.Split('\\')[7], "\\");
@@ -254,7 +197,6 @@ namespace Rainmeter.Plugin
                 case Type.Player:
 
                     #region Player
-
                     switch (_audioType)
                     {
                         case PlayerType.Duration:
@@ -276,7 +218,6 @@ namespace Rainmeter.Plugin
                         case PlayerType.Progress:
                             return Player.Progress;
                     }
-
                     #endregion Player
 
                     break;
@@ -284,9 +225,91 @@ namespace Rainmeter.Plugin
             return 0.0;
         }
 
-        internal static void Dispose()
+        internal string GetString()
         {
-            Player.Dispose();
+            switch (_type)
+            {
+                case Type.Friends:
+
+                    #region Friends
+                    switch (_friendsType)
+                    {
+                        case FriendsType.Name:
+                            return Info.FriendsUserData(_userType)[0];
+
+                        case FriendsType.Photo:
+                            return Info.FriendsUserData(_userType)[2];
+
+                        case FriendsType.Id:
+                            return Info.FriendsUserData(_userType)[1];
+
+                        case FriendsType.Status:
+                            return Info.FriendsUserData(_userType)[3];
+                    }
+                    #endregion Friends
+
+                    break;
+
+                case Type.Player:
+
+                    #region Player
+                    switch (_audioType)
+                    {
+                        case PlayerType.Settings:
+                            return "VKPlayer by Aragas (Aragasas)";
+
+                        case PlayerType.Artist:
+                            return Player.Artist ?? "Not Authorized";
+
+                        case PlayerType.Title:
+                            return Player.Title ?? "Click Play";
+                    }
+                    #endregion Player
+
+                    break;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Called by Rainmeter when a !CommandMeasure bang is sent to the measure.
+        /// </summary>
+        /// <param name="args">String containing the arguments to parse.</param>
+        internal void ExecuteBang(string command)
+        {
+            if (!OAuth.TokenIdExist)
+            {
+                OAuth.OAuthRun();
+                Player.Execute(command);
+            }
+            else
+            {
+                Player.Execute(command);
+            }
+        }
+
+        internal void Finalize()
+        {
+
+        }
+
+        internal void PlayerIsAlive(RainmeterAPI rm)
+        {
+            new Thread(() =>
+            {
+                try
+                {
+                    while (rm.ReadString("PlayerType", "") != "")
+                    {
+                        Thread.Sleep(2000);
+                    }
+                }
+                catch
+                {
+                    Player.Dispose();
+                    Thread.CurrentThread.Abort();
+                }
+            }).Start();
         }
     }
 }

@@ -118,13 +118,13 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Plugin\Measure.cs" />
     <Compile Include="NAudio\CoreAudioApi\MMDevice.cs" />
     <Compile Include="NAudio\CoreAudioApi\MMDeviceCollection.cs" />
     <Compile Include="NAudio\CoreAudioApi\MMDeviceEnumerator.cs" />
     <Compile Include="NAudio\Wave\WaveFormats\WaveFormatCustomMarshale.cs" />
     <Compile Include="NAudio\Wave\WaveStreams\Mp3FileReader.cs" />
     <Compile Include="NAudio\FileFormats\Mp3\Mp3Frame.cs" />
-    <Compile Include="API\DllExport.cs" />
     <Compile Include="API\Plugin.cs" />
     <Compile Include="ErrorHandler.cs" />
     <Compile Include="Information\Info.cs" />
@@ -419,10 +419,8 @@
     <Compile Include="Forms\OAuth.Designer.cs">
       <DependentUpon>OAuth.cs</DependentUpon>
     </Compile>
-    <Compile Include="Plugin\Measure.cs" />
     <Compile Include="API\RainmeterAPI.cs" />
     <Compile Include="AudioPlayer\Player.cs" />
-    <Compile Include="Plugin\Execute.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\OAuth.en.resx">
@@ -444,6 +442,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="NAudio\LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Measure\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -30,10 +30,7 @@ namespace Rainmeter.Information
         {
             get
             {
-                if (_friendsCount == 0)
-                    return GetFriendsCount();
-
-                return _friendsCount;
+                return _friendsCount == 0 ? GetFriendsCount() : _friendsCount;
             }
         }
 
@@ -41,9 +38,7 @@ namespace Rainmeter.Information
         {
             get
             {
-                if (_id == null)
-                    return GetId();
-                return _id;
+                return _id ?? GetId();
             }
         }
 
@@ -51,9 +46,7 @@ namespace Rainmeter.Information
         {
             get
             {
-                if (_token == null)
-                    return GetToken();
-                return _token;
+                return _token ?? GetToken();
             }
         }
 
@@ -141,7 +134,7 @@ namespace Rainmeter.Information
 
         #endregion Messages
 
-        public static void Update()
+        public static void Reload()
         {
             _userArray = null;
             _messagesUnReadCount = null;
