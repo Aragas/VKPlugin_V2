@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace Rainmeter.Forms
+namespace Plugin.Forms
 {
     /// <summary>
     ///     Get Token and Id.

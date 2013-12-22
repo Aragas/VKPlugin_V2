@@ -8,7 +8,7 @@
     <ProjectGuid>{F43D0210-4CED-49B0-93C4-C694EFB44282}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Rainmeter</RootNamespace>
+    <RootNamespace>Plugin</RootNamespace>
     <AssemblyName>VKPlugin</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -118,15 +118,15 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Plugin\Measure.cs" />
+    <Compile Include="ErrorHandler\ErrorHandler.cs" />
+    <Compile Include="Measure.cs" />
     <Compile Include="NAudio\CoreAudioApi\MMDevice.cs" />
     <Compile Include="NAudio\CoreAudioApi\MMDeviceCollection.cs" />
     <Compile Include="NAudio\CoreAudioApi\MMDeviceEnumerator.cs" />
     <Compile Include="NAudio\Wave\WaveFormats\WaveFormatCustomMarshale.cs" />
     <Compile Include="NAudio\Wave\WaveStreams\Mp3FileReader.cs" />
     <Compile Include="NAudio\FileFormats\Mp3\Mp3Frame.cs" />
-    <Compile Include="API\Plugin.cs" />
-    <Compile Include="ErrorHandler.cs" />
+    <Compile Include="Rainmeter\Plugin.cs" />
     <Compile Include="Information\Info.cs" />
     <Compile Include="Methods\Audio.cs" />
     <Compile Include="Methods\Friends.cs" />
@@ -419,7 +419,7 @@
     <Compile Include="Forms\OAuth.Designer.cs">
       <DependentUpon>OAuth.cs</DependentUpon>
     </Compile>
-    <Compile Include="API\RainmeterAPI.cs" />
+    <Compile Include="Rainmeter\RainmeterAPI.cs" />
     <Compile Include="AudioPlayer\Player.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -444,7 +444,7 @@
     <Content Include="NAudio\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Measure\" />
+    <Folder Include="Rainmeter\API\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -455,7 +455,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)\API\DllExporter.exe" "$(ConfigurationName)" "$(PlatformName)" "$(TargetDir)\" "$(TargetFileName)"
+    <PostBuildEvent>"$(SolutionDir)\Rainmeter\DllExporter.exe" "$(ConfigurationName)" "$(PlatformName)" "$(TargetDir)\" "$(TargetFileName)"
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

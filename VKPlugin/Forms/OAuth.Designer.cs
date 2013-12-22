@@ -1,4 +1,4 @@
-﻿namespace Rainmeter.Forms
+﻿namespace Plugin.Forms
 {
     partial class OAuth
     {

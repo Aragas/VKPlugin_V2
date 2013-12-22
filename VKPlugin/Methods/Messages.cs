@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Xml;
-using Rainmeter.ErrorHandler;
+using Plugin.ErrorHandler;
 
-namespace Rainmeter.Methods
+namespace Plugin.Methods
 {
     public class Messages
     {

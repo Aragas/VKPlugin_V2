@@ -1,15 +1,14 @@
 ﻿using NAudio.CoreAudioApi;
 using NAudio.Wave;
-using Rainmeter.ErrorHandler;
-using Rainmeter.Forms;
-using Rainmeter.Methods;
-using Rainmeter.Plugin;
+using Plugin.ErrorHandler;
+using Plugin.Forms;
+using Plugin.Methods;
 using System;
 using System.IO;
 using System.Net;
 using System.Threading;
 
-namespace Rainmeter.AudioPlayer
+namespace Plugin.AudioPlayer
 {
     // To do:
     // Save mp3 to disk while playing from url. (Done).

@@ -19,16 +19,16 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Rainmeter.API
+namespace Rainmeter
 {
     /// <summary>
     ///     Wrapper around the Rainmeter C API.
     /// </summary>
-    public class RainmeterAPI
+    public class API
     {
         private readonly IntPtr _mRm;
 
-        public RainmeterAPI(IntPtr rm)
+        public API(IntPtr rm)
         {
             _mRm = rm;
         }

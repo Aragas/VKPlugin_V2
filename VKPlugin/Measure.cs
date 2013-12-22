@@ -1,11 +1,10 @@
-﻿using Rainmeter.API;
-using Rainmeter.AudioPlayer;
-using Rainmeter.Forms;
-using Rainmeter.Information;
+﻿using Plugin.AudioPlayer;
+using Plugin.Forms;
+using Plugin.Information;
 using System;
 using System.Threading;
 
-namespace Rainmeter.Plugin
+namespace Plugin
 {
     internal class Measure
     {
@@ -15,7 +14,7 @@ namespace Rainmeter.Plugin
 
         int _userType;
 
-        enum Type
+        internal enum Type
         {
             Player,
             Friends,
@@ -63,8 +62,10 @@ namespace Rainmeter.Plugin
         /// </summary>
         /// <param name="api">Rainmeter API</param>
         /// <param name="maxValue">Max Value</param>
-        internal void Reload(RainmeterAPI rm, ref double maxValue)
+        internal void Reload(Rainmeter.API rm, ref double maxValue)
         {
+            TypeIsAlive(rm, Type.Player);
+
             string path = rm.ReadPath("PlayerType", "");
             string playertype = rm.ReadString("PlayerType", "");
             string friendtype = rm.ReadString("FriendType", "");
@@ -127,8 +128,8 @@ namespace Rainmeter.Plugin
                             break;
 
                         default:
-                            RainmeterAPI.Log
-                                (RainmeterAPI.LogType.Error, "VKPlugin.dll PlayerType=" + playertype + " not valid");
+                            Rainmeter.API.Log
+                                (Rainmeter.API.LogType.Error, "VKPlugin.dll PlayerType=" + playertype + " not valid");
                             break;
                     }
 
@@ -163,8 +164,8 @@ namespace Rainmeter.Plugin
                             break;
 
                         default:
-                            RainmeterAPI.Log
-                                (RainmeterAPI.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
+                            Rainmeter.API.Log
+                                (Rainmeter.API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
                             break;
                     }
 
@@ -177,8 +178,8 @@ namespace Rainmeter.Plugin
                     break;
 
                 default:
-                    RainmeterAPI.Log
-                        (RainmeterAPI.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
+                    Rainmeter.API.Log
+                        (Rainmeter.API.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
                     break;
             }
         }
@@ -290,16 +291,15 @@ namespace Rainmeter.Plugin
 
         internal void Finalize()
         {
-
         }
 
-        internal void PlayerIsAlive(RainmeterAPI rm)
+        internal void TypeIsAlive(Rainmeter.API rm, Type type)
         {
             new Thread(() =>
             {
                 try
                 {
-                    while (rm.ReadString("PlayerType", "") != "")
+                    while (rm.ReadString(type.ToString(), "") != "")
                     {
                         Thread.Sleep(2000);
                     }

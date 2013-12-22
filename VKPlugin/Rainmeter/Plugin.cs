@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Rainmeter.Plugin;
+using Plugin;
 
-namespace Rainmeter.API
+namespace Rainmeter
 {
     public static class Plugin
     {
@@ -13,14 +13,13 @@ namespace Rainmeter.API
         {
             var id = (uint)*data;
             Measures.Add(id, new Measure());
-            Measures[id].PlayerIsAlive(new RainmeterAPI((IntPtr)rm));
         }
 
         [DllExport]
         public static unsafe void Reload(void* data, void* rm, double* maxValue)
         {
             var id = (uint)data;
-            Measures[id].Reload(new RainmeterAPI((IntPtr)rm), ref *maxValue);
+            Measures[id].Reload(new API((IntPtr)rm), ref *maxValue);
         }
 
         [DllExport]

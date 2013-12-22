@@ -1,9 +1,8 @@
-﻿using Rainmeter.Forms;
-using Rainmeter.Methods;
-using Rainmeter.Plugin;
+﻿using Plugin.Forms;
+using Plugin.Methods;
 using System;
 
-namespace Rainmeter.Information
+namespace Plugin.Information
 {
     public static class Info
     {
