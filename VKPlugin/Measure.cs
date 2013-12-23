@@ -70,7 +70,8 @@ namespace Plugin
             Info.Reload();
 
             if (Path == null && !String.IsNullOrEmpty(path))
-                Path = rm.ReadPath("PlayerType", "").Replace("\\" + path.Split('\\')[7], "\\");
+                Path = rm.ReadPath("PlayerType", "").Replace("\\" +
+rm.ReadPath("PlayerType", "").Split('\\')[7], "\\");
 
             switch (type.ToUpperInvariant())
             {
