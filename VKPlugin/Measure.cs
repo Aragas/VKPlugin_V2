@@ -1,4 +1,4 @@
-﻿using Plugin.AudioPlayer;
+using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
 using System;
@@ -12,8 +12,6 @@ namespace Plugin
         public static string Path { get; private set; }
         public static string SaveAudio { get; private set; }
 
-        int _userType;
-
         internal enum Type
         {
             Player,
@@ -22,12 +20,13 @@ namespace Plugin
         }
         Type _type;
 
-        enum FriendsType
+        enum FriendsType : int
         {
             Name,
             Photo,
             Id,
-            Status
+            Status,
+            User
         }
         FriendsType _friendsType;
 
@@ -141,7 +140,7 @@ namespace Plugin
                     _type = Type.Friends;
                     if (FriendsCount == null)
                         FriendsCount = rm.ReadString("FriendsCount", "1");
-                    _userType = rm.ReadInt("UserType", 1);
+                    (int)FriendsType.User = rm.ReadInt("UserType", 1);
 
                     #region Friends
 
@@ -236,16 +235,16 @@ namespace Plugin
                     switch (_friendsType)
                     {
                         case FriendsType.Name:
-                            return Info.FriendsUserData(_userType)[0];
+                            return Info.FriendsUserData((int)FriendsType.User)0];
 
                         case FriendsType.Photo:
-                            return Info.FriendsUserData(_userType)[2];
+                            return Info.FriendsUserData((int)FriendsType.User)[2];
 
                         case FriendsType.Id:
-                            return Info.FriendsUserData(_userType)[1];
+                            return Info.FriendsUserData((int)FriendsType.User)[1];
 
                         case FriendsType.Status:
-                            return Info.FriendsUserData(_userType)[3];
+                            return Info.FriendsUserData((int)FriendsType.User)[3];
                     }
                     #endregion Friends
 
