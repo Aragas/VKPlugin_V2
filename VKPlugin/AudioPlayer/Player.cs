@@ -18,23 +18,23 @@ namespace Plugin.AudioPlayer
 
     public static class Player
     {
-        internal static WaveChannel32 AudioChannel32;
-        internal static Playing Option = Playing.Init;
-
-        private static readonly MMDevice DefaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
-            (DataFlow.Render, Role.Multimedia);
-
-        private static Audio _audio; 
-        private static GetFile _gFile = new GetFile();
-        private static GetStream _gStream = new GetStream();
-        private static WaveOut _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
-
         internal enum Playing
         {
             Init,
             Buffering,
             Ready
         }
+        internal static Playing Option;
+
+        internal static WaveChannel32 AudioChannel32;
+
+        private static readonly MMDevice DefaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
+            (DataFlow.Render, Role.Multimedia);
+
+        private static Audio _audio; 
+        private static GetFile _gFile;
+        private static GetStream _gStream;
+        private static WaveOut _waveOut = new WaveOut();
 
         #region AudioList
 
@@ -245,17 +245,18 @@ namespace Plugin.AudioPlayer
         {
             DisposeAudio();
 
-            _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
+            _waveOut = new WaveOut();
 
-            if (FileExists)
-            {
-                _gFile = new GetFile();
-                _waveOut.Init(_gFile.Wave(FilePath));
-            }
-            else
+            //if (FileExists)
+            //{
+            //    _gFile = new GetFile();
+            //    _waveOut.Init(_gFile.Wave(FilePath));
+            //}
+            //else
             {
                 _gStream = new GetStream();
-                _waveOut.Init(_gStream.Wave(Url));
+                _gStream.GetWave(Url, out AudioChannel32);
+                _waveOut.Init(AudioChannel32);
             }
 
             AudioChannel32.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
@@ -444,14 +445,15 @@ namespace Plugin.AudioPlayer
 
         private static void DisposeAudio()
         {
-            if (AudioChannel32 != null)
-            {
-                AudioChannel32.Dispose();
-            }
 
             if (_waveOut != null)
             {
                 _waveOut.Dispose();
+            }
+
+            if (AudioChannel32 != null)
+            {
+                AudioChannel32 = null;
             }
 
             if (_gStream != null)
@@ -492,12 +494,14 @@ namespace Plugin.AudioPlayer
             }
         }
 
-        public WaveChannel32 Wave(string url)
+        public WaveChannel32 Wave(string path)
         {
-            _reader = new Mp3FileReader(url);
+            _reader = new Mp3FileReader(path);
             _channel = new WaveChannel32(_reader);
-            Player.AudioChannel32 = _channel;
-            return Player.AudioChannel32;
+            _channel.Volume = Player.AudioChannel32.Volume;
+            return _channel;
+            //Player.AudioChannel32 = _channel;
+            //return Player.AudioChannel32;
         }
     }
 
@@ -511,14 +515,14 @@ namespace Plugin.AudioPlayer
 
         public GetStream()
         {
-            _downloadThread = Player.SaveAudio ? new Thread(DownloadSave) : new Thread(Download);
+            //_downloadThread = Player.SaveAudio ? new Thread(DownloadSave) : new Thread(Download);
         }
 
         private string Url { get; set; }
 
         public void Dispose()
         {
-            if (_downloadThread.IsAlive)
+            if (_downloadThread.IsAlive && _downloadThread != null)
                 _downloadThread.Abort();
 
             if (_reader != null)
@@ -533,7 +537,7 @@ namespace Plugin.AudioPlayer
             }
         }
 
-        public WaveChannel32 Wave(string url)
+        public void GetWave(string url, out WaveChannel32 _channel)
         {
             Url = url;
 
@@ -554,8 +558,10 @@ namespace Plugin.AudioPlayer
             _ms.Position = 0;
             _reader = new Mp3FileReader(_ms);
             _channel = new WaveChannel32(_reader);
-            Player.AudioChannel32 = _channel;
-            return Player.AudioChannel32;
+            _channel.Volume = Player.AudioChannel32.Volume;
+            //return _channel;
+            //Player.AudioChannel32 = _channel;
+            //return Player.AudioChannel32;
         }
 
         private void CopyStream(Stream input, Stream output)

@@ -29,7 +29,7 @@ namespace Plugin.Information
         {
             get
             {
-                return _friendsCount == 0 ? GetFriendsCount() : _friendsCount;
+                return _friendsCount == 0 ? Convert.ToInt32(Measure.FriendsCount) : _friendsCount;
             }
         }
 
@@ -47,11 +47,6 @@ namespace Plugin.Information
             {
                 return _token ?? GetToken();
             }
-        }
-
-        private static int GetFriendsCount()
-        {
-            return Convert.ToInt32(Measure.FriendsCount);
         }
 
         private static string GetId()
@@ -133,10 +128,15 @@ namespace Plugin.Information
 
         #endregion Messages
 
-        public static void Reload()
+        public static void Initialize()
         {
             _userArray = null;
             _messagesUnReadCount = null;
+        }
+
+        public static void Update()
+        {
+            // if data is new, make a reload.
         }
     }
 }

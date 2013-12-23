@@ -129,6 +129,7 @@ namespace Rainmeter
         [DllImport("Rainmeter.dll", CharSet = CharSet.Auto)]
         private static extern unsafe char* RmReplaceVariables(void* rm, char* str);
 
+
         private static unsafe char* ToUnsafe(string s)
         {
             fixed (char* p = s) return p;
