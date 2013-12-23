@@ -18,7 +18,7 @@ namespace Plugin.AudioPlayer
 
     public static class Player
     {
-        internal static WaveChannel32 AudioStream;
+        internal static WaveChannel32 AudioChannel32;
         internal static Playing Option = Playing.Init;
 
         private static readonly MMDevice DefaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
@@ -112,7 +112,7 @@ namespace Plugin.AudioPlayer
             {
                 if (Option != Playing.Ready)
                     return false;
-                return AudioStream != null && (Duration < AudioStream.CurrentTime.TotalSeconds);
+                return AudioChannel32 != null && (Duration < AudioChannel32.CurrentTime.TotalSeconds);
             }
         }
 
@@ -123,7 +123,7 @@ namespace Plugin.AudioPlayer
                 if (_waveOut.PlaybackState == PlaybackState.Stopped)
                     return 0.0;
                 if (!Played)
-                    return AudioStream.CurrentTime.TotalSeconds;
+                    return AudioChannel32.CurrentTime.TotalSeconds;
                 return 0.0;
             }
         }
@@ -243,7 +243,7 @@ namespace Plugin.AudioPlayer
 
         private static void PlayNew()
         {
-            DisposeAll();
+            DisposeAudio();
 
             _waveOut = new WaveOut(WaveCallbackInfo.FunctionCallback());
 
@@ -258,7 +258,7 @@ namespace Plugin.AudioPlayer
                 _waveOut.Init(_gStream.Wave(Url));
             }
 
-            AudioStream.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
+            AudioChannel32.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
 
             _waveOut.Play();
         }
@@ -368,7 +368,7 @@ namespace Plugin.AudioPlayer
                 try
                 {
                     value = value.Substring(1);
-                    AudioStream.Volume += (float)Convert.ToInt32(value) / (float)100;
+                    AudioChannel32.Volume += (float)Convert.ToInt32(value) / (float)100;
                 }
                 catch (FormatException)
                 {
@@ -380,7 +380,7 @@ namespace Plugin.AudioPlayer
                 try
                 {
                     value = value.Substring(1);
-                    AudioStream.Volume -= (float)Convert.ToInt32(value) / (float)100;
+                    AudioChannel32.Volume -= (float)Convert.ToInt32(value) / (float)100;
                 }
                 catch (FormatException)
                 {
@@ -391,7 +391,7 @@ namespace Plugin.AudioPlayer
             {
                 try
                 {
-                    AudioStream.Volume = (float)Convert.ToInt32(value) / (float)100;
+                    AudioChannel32.Volume = (float)Convert.ToInt32(value) / (float)100;
                 }
                 catch (FormatException)
                 {
@@ -434,21 +434,21 @@ namespace Plugin.AudioPlayer
 
         public static void Dispose()
         {
-            DisposeAll();
+            DisposeAudio();
 
             if (_array != null)
             {
                 _array = null;
             }
-
-            if (AudioStream != null)
-            {
-                AudioStream.Dispose();
-            }
         }
 
-        private static void DisposeAll()
+        private static void DisposeAudio()
         {
+            if (AudioChannel32 != null)
+            {
+                AudioChannel32.Dispose();
+            }
+
             if (_waveOut != null)
             {
                 _waveOut.Dispose();
@@ -496,8 +496,8 @@ namespace Plugin.AudioPlayer
         {
             _reader = new Mp3FileReader(url);
             _channel = new WaveChannel32(_reader);
-            Player.AudioStream = _channel;
-            return Player.AudioStream;
+            Player.AudioChannel32 = _channel;
+            return Player.AudioChannel32;
         }
     }
 
@@ -554,8 +554,8 @@ namespace Plugin.AudioPlayer
             _ms.Position = 0;
             _reader = new Mp3FileReader(_ms);
             _channel = new WaveChannel32(_reader);
-            Player.AudioStream = _channel;
-            return Player.AudioStream;
+            Player.AudioChannel32 = _channel;
+            return Player.AudioChannel32;
         }
 
         private void CopyStream(Stream input, Stream output)

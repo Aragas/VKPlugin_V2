@@ -1,4 +1,4 @@
-using Plugin.AudioPlayer;
+﻿using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
 using System;
@@ -12,21 +12,23 @@ namespace Plugin
         public static string Path { get; private set; }
         public static string SaveAudio { get; private set; }
 
+        int _userCount = 1;
+        Thread _playerTypeIsAlive;
+
         internal enum Type
         {
-            Player,
-            Friends,
-            Messages
+            PlayerType,
+            FriendsType,
+            MessagesType
         }
         Type _type;
 
-        enum FriendsType : int
+        enum FriendsType
         {
             Name,
             Photo,
             Id,
-            Status,
-            User
+            Status
         }
         FriendsType _friendsType;
 
@@ -51,7 +53,6 @@ namespace Plugin
         /// </summary>
         internal Measure()
         {
-            _userType = 1;
         }
 
         /// <summary>
@@ -63,21 +64,23 @@ namespace Plugin
         /// <param name="maxValue">Max Value</param>
         internal void Reload(Rainmeter.API rm, ref double maxValue)
         {
-            TypeIsAlive(rm, Type.Player);
-
-            string type = rm.ReadString("Type", "");
-
             Info.Reload();
 
-            if (Path == null && !String.IsNullOrEmpty(path))
-                Path = rm.ReadPath("PlayerType", "").Replace("\\" +
-rm.ReadPath("PlayerType", "").Split('\\')[7], "\\");
+            if (Path == null)
+            {
+                string path = rm.ReadPath("Type", "");
+                if (!String.IsNullOrEmpty(path))
+                    Path = path.Replace("\\" + path.Split('\\')[7], "\\");
+            }
+
+            string type = rm.ReadString("Type", "");
 
             switch (type.ToUpperInvariant())
             {
                 case "PLAYER":
+                    TypeIsAlive(rm, Type.PlayerType, _playerTypeIsAlive);
+                    _type = Type.PlayerType;
                     string playertype = rm.ReadString("PlayerType", "");
-                    _type = Type.Player;
 
                     #region Player
 
@@ -136,11 +139,11 @@ rm.ReadPath("PlayerType", "").Split('\\')[7], "\\");
                     break;
 
                 case "FRIENDS":
-                    string friendtype = rm.ReadString("FriendType", "");
-                    _type = Type.Friends;
+                    _type = Type.FriendsType;
+                    _userCount = rm.ReadInt("UserType", 1);
                     if (FriendsCount == null)
                         FriendsCount = rm.ReadString("FriendsCount", "1");
-                    (int)FriendsType.User = rm.ReadInt("UserType", 1);
+                    string friendtype = rm.ReadString("FriendType", "");
 
                     #region Friends
 
@@ -173,7 +176,7 @@ rm.ReadPath("PlayerType", "").Split('\\')[7], "\\");
                     break;
 
                 case "MESSAGES":
-                    _type = Type.Messages;
+                    _type = Type.MessagesType;
                     break;
 
                 default:
@@ -191,10 +194,10 @@ rm.ReadPath("PlayerType", "").Split('\\')[7], "\\");
         {
             switch (_type)
             {
-                case Type.Messages:
+                case Type.MessagesType:
                     return (Info.MessagesUnReadCount >= 1) ? 1 : 0;
 
-                case Type.Player:
+                case Type.PlayerType:
 
                     #region Player
                     switch (_audioType)
@@ -229,28 +232,28 @@ rm.ReadPath("PlayerType", "").Split('\\')[7], "\\");
         {
             switch (_type)
             {
-                case Type.Friends:
+                case Type.FriendsType:
 
                     #region Friends
                     switch (_friendsType)
                     {
                         case FriendsType.Name:
-                            return Info.FriendsUserData((int)FriendsType.User)0];
+                            return Info.FriendsUserData(_userCount)[0];
 
                         case FriendsType.Photo:
-                            return Info.FriendsUserData((int)FriendsType.User)[2];
+                            return Info.FriendsUserData(_userCount)[2];
 
                         case FriendsType.Id:
-                            return Info.FriendsUserData((int)FriendsType.User)[1];
+                            return Info.FriendsUserData(_userCount)[1];
 
                         case FriendsType.Status:
-                            return Info.FriendsUserData((int)FriendsType.User)[3];
+                            return Info.FriendsUserData(_userCount)[3];
                     }
                     #endregion Friends
 
                     break;
 
-                case Type.Player:
+                case Type.PlayerType:
 
                     #region Player
                     switch (_audioType)
@@ -292,23 +295,27 @@ rm.ReadPath("PlayerType", "").Split('\\')[7], "\\");
         {
         }
 
-        internal void TypeIsAlive(Rainmeter.API rm, Type type)
+        internal void TypeIsAlive(Rainmeter.API rm, Type type, Thread thread)
         {
-            new Thread(() =>
+            if (thread == null || !thread.IsAlive)
             {
-                try
+                thread = new Thread(delegate()
                 {
-                    while (rm.ReadString(type.ToString(), "") != "")
+                    try
                     {
-                        Thread.Sleep(2000);
+                        while (rm.ReadString(type.ToString(), "") != "")
+                        {
+                            Thread.Sleep(2000);
+                        }
                     }
-                }
-                catch
-                {
-                    Player.Dispose();
-                    Thread.CurrentThread.Abort();
-                }
-            }).Start();
+                    catch
+                    {
+                        Player.Dispose();
+                        Thread.CurrentThread.Abort();
+                    }
+                });
+                thread.Start();
+            }
         }
     }
 }
