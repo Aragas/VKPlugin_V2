@@ -65,19 +65,17 @@ namespace Plugin
         {
             TypeIsAlive(rm, Type.Player);
 
-            string path = rm.ReadPath("PlayerType", "");
-            string playertype = rm.ReadString("PlayerType", "");
-            string friendtype = rm.ReadString("FriendType", "");
             string type = rm.ReadString("Type", "");
 
             Info.Reload();
 
             if (Path == null && !String.IsNullOrEmpty(path))
-                Path = path.Replace("\\" + path.Split('\\')[7], "\\");
+                Path = rm.ReadPath("PlayerType", "").Replace("\\" + path.Split('\\')[7], "\\");
 
             switch (type.ToUpperInvariant())
             {
                 case "PLAYER":
+                    string playertype = rm.ReadString("PlayerType", "");
                     _type = Type.Player;
 
                     #region Player
@@ -137,6 +135,7 @@ namespace Plugin
                     break;
 
                 case "FRIENDS":
+                    string friendtype = rm.ReadString("FriendType", "");
                     _type = Type.Friends;
                     if (FriendsCount == null)
                         FriendsCount = rm.ReadString("FriendsCount", "1");
