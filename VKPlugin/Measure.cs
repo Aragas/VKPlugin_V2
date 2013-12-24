@@ -1,10 +1,12 @@
 ﻿using System.Drawing.Imaging;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
 using System;
 using System.Threading;
+using Rainmeter;
 
 namespace Plugin
 {
@@ -17,13 +19,14 @@ namespace Plugin
         int _userCount = 1;
         Thread _playerTypeIsAlive;
 
-        internal enum Type
+        // Each type is a independent skin.
+        internal enum MeasureType
         {
             PlayerType,
             FriendsType,
             MessagesType
         }
-        Type _type;
+        MeasureType _type;
 
         enum FriendsType
         {
@@ -49,33 +52,35 @@ namespace Plugin
         }
         PlayerType _audioType;
 
-        /// <summary>
-        /// Called when a measure is created (i.e. when Rainmeter is launched or when a skin is refreshed). 
-        /// Initialize your measure object here.
-        /// </summary>
+        
         internal Measure()
         {
         }
 
-        internal void Initialize(Rainmeter.API rm)
+        /// <summary>
+        /// Called when a measure is created (i.e. when Rainmeter is launched or when a skin is refreshed). 
+        /// Initialize your measure object here.
+        /// </summary>
+        /// <param name="api">Rainmeter API</param>
+        internal void Initialize(API api)
         {
             Info.Initialize();
 
             if (Path == null)
             {
-                string path = rm.ReadPath("Type", "");
+                string path = api.ReadPath("Type", "");
                 if (!String.IsNullOrEmpty(path))
                     Path = path.Replace("\\" + path.Split('\\')[7], "\\");
             }
 
-            string type = rm.ReadString("Type", "");
+            string type = api.ReadString("Type", "");
 
             switch (type.ToUpperInvariant())
             {
                 case "PLAYER":
-                    TypeIsAlive(rm, Type.PlayerType, _playerTypeIsAlive);
-                    _type = Type.PlayerType;
-                    string playertype = rm.ReadString("PlayerType", "");
+                    TypeIsAlive(api, MeasureType.PlayerType, _playerTypeIsAlive);
+                    _type = MeasureType.PlayerType;
+                    string playertype = api.ReadString("PlayerType", "");
 
                     #region Player
                     switch (playertype.ToUpperInvariant())
@@ -83,7 +88,7 @@ namespace Plugin
                         case "SETTINGS":
                             _audioType = PlayerType.Settings;
                             if (SaveAudio == null)
-                                SaveAudio = rm.ReadString("SaveAudio", "FALSE").ToUpperInvariant();
+                                SaveAudio = api.ReadString("SaveAudio", "FALSE").ToUpperInvariant();
                             break;
 
                         case "STATE":
@@ -123,8 +128,8 @@ namespace Plugin
                             break;
 
                         default:
-                            Rainmeter.API.Log
-                                (Rainmeter.API.LogType.Error, "VKPlugin.dll PlayerType=" + playertype + " not valid");
+                            API.Log
+                                (API.LogType.Error, "VKPlugin.dll PlayerType=" + playertype + " not valid");
                             break;
                     }
                     #endregion Player
@@ -132,11 +137,11 @@ namespace Plugin
                     break;
 
                 case "FRIENDS":
-                    _type = Type.FriendsType;
-                    _userCount = rm.ReadInt("UserType", 1);
+                    _type = MeasureType.FriendsType;
+                    _userCount = api.ReadInt("UserType", 1);
                     if (FriendsCount == null)
-                        FriendsCount = rm.ReadString("FriendsCount", "1");
-                    string friendtype = rm.ReadString("FriendType", "");
+                        FriendsCount = api.ReadString("FriendsCount", "1");
+                    string friendtype = api.ReadString("FriendType", "");
 
                     #region Friends
                     switch (friendtype.ToUpperInvariant())
@@ -158,8 +163,8 @@ namespace Plugin
                             break;
 
                         default:
-                            Rainmeter.API.Log
-                                (Rainmeter.API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
+                            API.Log
+                                (API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
                             break;
                     }
                     #endregion Friends
@@ -167,85 +172,12 @@ namespace Plugin
                     break;
 
                 case "MESSAGES":
-                    _type = Type.MessagesType;
+                    _type = MeasureType.MessagesType;
                     break;
 
                 default:
-                    Rainmeter.API.Log
-                        (Rainmeter.API.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
-                    break;
-            }
-        }
-
-        /// <summary>
-        ///  Called when the measure settings are to be read directly after Initialize.
-        ///  If DynamicVariables=1 is set on the measure, Reload is called on every update cycle (usually once per second).
-        ///  Read and store measure settings here. To set a default maximum value for the measure, assign to maxValue.
-        /// </summary>
-        /// <param name="api">Rainmeter API</param>
-        /// <param name="maxValue">Max Value</param>
-        internal void Reload(Rainmeter.API rm, ref double maxValue)
-        {
-            string type = rm.ReadString("Type", "");
-
-            switch (type.ToUpperInvariant())
-            {
-                case "FRIENDS":
-                    _type = Type.FriendsType;
-                    _userCount = rm.ReadInt("UserType", 1);
-                    string friendtype = rm.ReadString("FriendType", "");
-
-                    #region Friends
-                    switch (friendtype.ToUpperInvariant())
-                    {
-                        case "NAME":
-                            _friendsType = FriendsType.Name;
-                            break;
-
-                        case "PHOTO":
-                            _friendsType = FriendsType.Photo;
-                            break;
-
-                        case "ID":
-                            _friendsType = FriendsType.Id;
-                            break;
-
-                        case "STATUS":
-                            _friendsType = FriendsType.Status;
-                            break;
-
-                        default:
-                            Rainmeter.API.Log
-                                (Rainmeter.API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
-                            break;
-                    }
-                    #endregion Friends
-
-                    break;
-
-                case "MESSAGES":
-                    _type = Type.MessagesType;
-                    break;
-
-
-                case "PLAYER":
-                    //TypeIsAlive(rm, Type.PlayerType, _playerTypeIsAlive);
-                    _type = Type.PlayerType;
-                    string playertype = rm.ReadString("PlayerType", "");
-
-                    switch (playertype.ToUpperInvariant())
-                    {
-                        // For autoplay.
-                        case "STATE":
-                            _audioType = PlayerType.State;
-                            break;
-                    }
-
-                    break;
-
-                default:
-                    Rainmeter.API.Log
-                        (Rainmeter.API.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
+                    API.Log
+                        (API.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
                     break;
             }
 
@@ -259,6 +191,78 @@ namespace Plugin
         }
 
         /// <summary>
+        ///  Called when the measure settings are to be read directly after Initialize.
+        ///  If DynamicVariables=1 is set on the measure, Reload is called on every update cycle (usually once per second).
+        ///  Read and store measure settings here. To set a default maximum value for the measure, assign to maxValue.
+        /// </summary>
+        /// <param name="api">Rainmeter API</param>
+        /// <param name="maxValue">Max Value</param>
+        internal void Reload(API api, ref double maxValue)
+        {
+            string type = api.ReadString("Type", "");
+
+            switch (type.ToUpperInvariant())
+            {
+                case "FRIENDS":
+                    _type = MeasureType.FriendsType;
+                    _userCount = api.ReadInt("UserType", 1);
+                    string friendtype = api.ReadString("FriendType", "");
+
+                    #region Friends
+                    switch (friendtype.ToUpperInvariant())
+                    {
+                        case "NAME":
+                            _friendsType = FriendsType.Name;
+                            break;
+
+                        case "PHOTO":
+                            _friendsType = FriendsType.Photo;
+                            break;
+
+                        case "ID":
+                            _friendsType = FriendsType.Id;
+                            break;
+
+                        case "STATUS":
+                            _friendsType = FriendsType.Status;
+                            break;
+
+                        default:
+                            API.Log
+                                (API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
+                            break;
+                    }
+                    #endregion Friends
+
+                    break;
+
+                case "MESSAGES":
+                    _type = MeasureType.MessagesType;
+                    break;
+
+
+                case "PLAYER":
+                    _type = MeasureType.PlayerType;
+                    string playertype = api.ReadString("PlayerType", "");
+
+                    switch (playertype.ToUpperInvariant())
+                    {
+                        // For autoplay.
+                        case "STATE":
+                            _audioType = PlayerType.State;
+                            break;
+                    }
+
+                    break;
+
+                default:
+                    API.Log
+                        (API.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Called on every update cycle (usually once per second).
         /// </summary>
         /// <returns>Return the numerical value for the measure here.</returns>
@@ -266,14 +270,14 @@ namespace Plugin
         {
             switch (_type)
             {
-                case Type.MessagesType:
+                case MeasureType.MessagesType:
                     //if (UpdateCounter(Type.MessagesType) == 0)
                     {
                         return (Info.MessagesUnReadCount >= 1) ? 1 : 0;
                     }
                     break;
 
-                case Type.PlayerType:
+                case MeasureType.PlayerType:
                     //if (UpdateCounter(Type.PlayerType) == 0)
                     {
                         #region Player
@@ -319,7 +323,7 @@ namespace Plugin
         {
             switch (_type)
             {
-                case Type.FriendsType:
+                case MeasureType.FriendsType:
                     //if (UpdatedString(Type.FriendsType))
                     {
                         #region Friends
@@ -341,7 +345,7 @@ namespace Plugin
                     }
                     break;
 
-                case Type.PlayerType:
+                case MeasureType.PlayerType:
                     //if (UpdatedString(Type.PlayerType))
                     {
                         #region Player
@@ -366,7 +370,7 @@ namespace Plugin
         /// <summary>
         /// Called by Rainmeter when a !CommandMeasure bang is sent to the measure.
         /// </summary>
-        /// <param name="args">String containing the arguments to parse.</param>
+        /// <param name="command">String containing the arguments to parse.</param>
         internal void ExecuteBang(string command)
         {
             if (!OAuth.TokenIdExist)
@@ -380,16 +384,33 @@ namespace Plugin
             }
         }
 
+        /// <summary>
+        /// Called when a measure is disposed (i.e. when Rainmeter is closed or when a skin is refreshed). 
+        /// Dispose your measure object here.
+        /// </summary>
         internal void Finalize()
         {
         }
 
-        //int[] arr = new int[Enum.GetNames(typeof(Type)).Length];
         //bool UpdatedString(Type type) {}
         //int UpdateCounter(Type type) {}
         //int UpdateRate;
 
-        internal void TypeIsAlive(Rainmeter.API rm, Type type, Thread thread)
+        /// <summary>
+        /// Called from TypeIsAlive(). (Using GetMethods())
+        /// </summary>
+        void PlayerTypeDispose()
+        {
+            Player.Dispose();
+        }
+
+        /// <summary>
+        /// Call this to monitor is your skin is alive. If not, calls "yourtypename + Dispose" (i.e. SampleTypeDispose()) .
+        /// </summary>
+        /// <param name="api">Rainmeter API</param>
+        /// <param name="type">MeasureType</param>
+        /// <param name="thread">Thread</param>
+        internal void TypeIsAlive(API api, MeasureType type, Thread thread)
         {
             if (thread == null || !thread.IsAlive)
             {
@@ -397,14 +418,19 @@ namespace Plugin
                 {
                     try
                     {
-                        while (rm.ReadString(type.ToString(), "") != "")
+                        while (api.ReadString(type.ToString(), "") != "")
                         {
                             Thread.Sleep(2000);
                         }
                     }
                     catch
                     {
+#if DEBUG
                         Player.Dispose();
+#else
+                        GetType().GetMethod(type + "Dispose", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(this, null);
+#endif
+
                         Thread.CurrentThread.Abort();
                     }
                 });

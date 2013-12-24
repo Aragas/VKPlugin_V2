@@ -515,6 +515,7 @@ namespace Plugin.AudioPlayer
 
         public GetStream()
         {
+            _downloadThread = new Thread(Download);
             //_downloadThread = Player.SaveAudio ? new Thread(DownloadSave) : new Thread(Download);
         }
 
@@ -541,7 +542,7 @@ namespace Plugin.AudioPlayer
         {
             Url = url;
 
-            if (!_downloadThread.IsAlive)
+            if (!_downloadThread.IsAlive && _downloadThread != null)
                 _downloadThread.Start();
 
             // Pre-buffering some data to allow NAudio to start playing
