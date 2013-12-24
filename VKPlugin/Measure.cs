@@ -412,6 +412,8 @@ namespace Plugin
         /// <param name="thread">Thread</param>
         internal void TypeIsAlive(API api, MeasureType type, Thread thread)
         {
+            // Сделать его статичным, поток полностью сюда кинуть. Имя потока зависит от type.
+
             if (thread == null || !thread.IsAlive)
             {
                 thread = new Thread(delegate()
@@ -428,7 +430,16 @@ namespace Plugin
 #if DEBUG
                         Player.Dispose();
 #else
-                        GetType().GetMethod(type + "Dispose", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(this, null);
+                        try
+                        {
+                            GetType()
+                                .GetMethod(type + "Dispose", BindingFlags.Instance | BindingFlags.NonPublic)
+                                .Invoke(this, null);
+                        }
+                        catch (NullReferenceException)
+                        {
+                            API.Log(API.LogType.Error, type + "Dispose() do not exist.");
+                        }
 #endif
 
                         Thread.CurrentThread.Abort();
