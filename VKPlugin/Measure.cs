@@ -18,6 +18,8 @@ namespace Plugin
 
         int _userCount = 1;
         Thread _playerTypeIsAlive;
+        
+        Dictionary<string, Thread> TypeIsAliveThreads = new Dictionary<string, Thread>();
 
         // Each type is a independent skin.
         internal enum MeasureType
@@ -416,7 +418,9 @@ namespace Plugin
         internal void TypeIsAlive(API api, MeasureType type, Thread thread)
         {
             // Сделать его статичным, поток полностью сюда кинуть. Имя потока зависит от type.
-
+            
+            TypeIsAliveThreads.Add(type.ToString(), new Thread());
+            
             if (thread == null || !thread.IsAlive)
             {
                 thread = new Thread(delegate()
