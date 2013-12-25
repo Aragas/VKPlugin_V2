@@ -250,12 +250,14 @@ namespace Plugin.AudioPlayer
             if (FileExists)
             {
                 _gFile = new GetFile();
-                _waveOut.Init(_gFile.Wave(FilePath));
+                AudioChannel32 = _gFile.Wave(FilePath);
+                _waveOut.Init(AudioChannel32);
             }
             else
             {
                 _gStream = new GetStream();
-                _waveOut.Init(_gStream.Wave(Url));
+                AudioChannel32 = _gStream.Wave(Url);
+                _waveOut.Init(AudioChannel32);
             }
 
             AudioChannel32.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
@@ -485,12 +487,10 @@ namespace Plugin.AudioPlayer
             if (_reader != null)
             {
                 _reader.Dispose();
-                _reader = null;
             }
             if (_channel != null)
             {
                 _channel.Dispose();
-                _channel = null;
             }
         }
 
@@ -499,9 +499,9 @@ namespace Plugin.AudioPlayer
             _reader = new Mp3FileReader(path);
             _channel = new WaveChannel32(_reader);
             //_channel.Volume = Player.AudioChannel32.Volume;
-            //return _channel;
-            Player.AudioChannel32 = _channel;
-            return Player.AudioChannel32;
+            return _channel;
+            //Player.AudioChannel32 = _channel;
+            //return Player.AudioChannel32;
         }
     }
 
@@ -515,7 +515,6 @@ namespace Plugin.AudioPlayer
 
         public GetStream()
         {
-            //_downloadThread = new Thread(Download);
             _downloadThread = Player.SaveAudio ? new Thread(DownloadSave) : new Thread(Download);
         }
 
@@ -529,12 +528,10 @@ namespace Plugin.AudioPlayer
             if (_reader != null)
             {
                 _reader.Dispose();
-                _reader = null;
             }
             if (_channel != null)
             {
                 _channel.Dispose();
-                _channel = null;
             }
         }
 
@@ -560,9 +557,9 @@ namespace Plugin.AudioPlayer
             _reader = new Mp3FileReader(_ms);
             _channel = new WaveChannel32(_reader);
             //_channel.Volume = Player.AudioChannel32.Volume;
-            //return _channel;
-            Player.AudioChannel32 = _channel;
-            return Player.AudioChannel32;
+            return _channel;
+            //Player.AudioChannel32 = _channel;
+            //return Player.AudioChannel32;
         }
 
         private void CopyStream(Stream input, Stream output)
