@@ -421,6 +421,7 @@
     </Compile>
     <Compile Include="Rainmeter\RainmeterAPI.cs" />
     <Compile Include="AudioPlayer\Player.cs" />
+    <Compile Include="Update.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\OAuth.en.resx">

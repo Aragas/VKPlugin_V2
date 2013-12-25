@@ -1,4 +1,5 @@
-﻿using Plugin.AudioPlayer;
+﻿using System.Windows.Forms;
+using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
 using Rainmeter;
@@ -74,6 +75,11 @@ namespace Plugin
                 if (!String.IsNullOrEmpty(path))
                     Path = path.Replace("\\" + path.Split('\\')[7], "\\");
             }
+
+            //if (Updates.UpdateAvailable() && Updates.DownloadUpdate())
+            //{
+            //}
+
             #endregion
 
             string type = api.ReadString("Type", "");
