@@ -1,12 +1,12 @@
-﻿using System.Drawing.Imaging;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using Plugin.AudioPlayer;
+﻿using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
-using System;
-using System.Threading;
 using Rainmeter;
+using System;
+using System.Drawing.Imaging;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Plugin
 {
@@ -64,6 +64,7 @@ namespace Plugin
         /// <param name="api">Rainmeter API</param>
         internal void Initialize(API api)
         {
+            #region Initialization
             Info.Initialize();
 
             if (Path == null)
@@ -72,6 +73,7 @@ namespace Plugin
                 if (!String.IsNullOrEmpty(path))
                     Path = path.Replace("\\" + path.Split('\\')[7], "\\");
             }
+            #endregion
 
             string type = api.ReadString("Type", "");
 
@@ -87,8 +89,9 @@ namespace Plugin
                     {
                         case "SETTINGS":
                             _audioType = PlayerType.Settings;
-                            if (SaveAudio == null)
-                                SaveAudio = api.ReadString("SaveAudio", "FALSE").ToUpperInvariant();
+                            
+                            SaveAudio = api.ReadString("SaveAudio", "FALSE").ToUpperInvariant();
+                                
                             break;
 
                         case "STATE":
@@ -331,12 +334,12 @@ namespace Plugin
                         {
                             case FriendsType.Name:
                                 return Info.FriendsUserData(_userCount)[0];
+                                
+                            case FriendsType.Id:
+                                return Info.FriendsUserData(_userCount)[1];
 
                             case FriendsType.Photo:
                                 return Info.FriendsUserData(_userCount)[2];
-
-                            case FriendsType.Id:
-                                return Info.FriendsUserData(_userCount)[1];
 
                             case FriendsType.Status:
                                 return Info.FriendsUserData(_userCount)[3];
@@ -428,6 +431,7 @@ namespace Plugin
                     catch
                     {
 #if DEBUG
+                        // Debug doesn't work well with GetMethod().
                         Player.Dispose();
 #else
                         try
