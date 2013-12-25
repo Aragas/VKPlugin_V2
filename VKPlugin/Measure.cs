@@ -3,9 +3,8 @@ using Plugin.Forms;
 using Plugin.Information;
 using Rainmeter;
 using System;
-using System.Drawing.Imaging;
+using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Plugin
@@ -17,9 +16,8 @@ namespace Plugin
         public static string SaveAudio { get; private set; }
 
         int _userCount = 1;
-        Thread _playerTypeIsAlive;
-        
-        Dictionary<string, Thread> TypeIsAliveThreads = new Dictionary<string, Thread>();
+
+        Dictionary<string, Thread> _threadAlive;
 
         // Each type is a independent skin.
         internal enum MeasureType
@@ -57,6 +55,7 @@ namespace Plugin
         
         internal Measure()
         {
+            _threadAlive = new Dictionary<string, Thread>();
         }
 
         /// <summary>
@@ -82,7 +81,7 @@ namespace Plugin
             switch (type.ToUpperInvariant())
             {
                 case "PLAYER":
-                    TypeIsAlive(api, MeasureType.PlayerType, _playerTypeIsAlive);
+                    TypeIsAlive(api, MeasureType.PlayerType);
                     _type = MeasureType.PlayerType;
                     string playertype = api.ReadString("PlayerType", "");
 
@@ -415,15 +414,13 @@ namespace Plugin
         /// <param name="api">Rainmeter API</param>
         /// <param name="type">MeasureType</param>
         /// <param name="thread">Thread</param>
-        internal void TypeIsAlive(API api, MeasureType type, Thread thread)
+        internal void TypeIsAlive(API api, MeasureType type)
         {
-            // Сделать его статичным, поток полностью сюда кинуть. Имя потока зависит от type.
-            
-            TypeIsAliveThreads.Add(type.ToString(), new Thread());
-            
-            if (thread == null || !thread.IsAlive)
+            if (!_threadAlive.ContainsKey(type.ToString()) ||
+                !_threadAlive[type.ToString()].IsAlive ||
+                _threadAlive[type.ToString()] == null)
             {
-                thread = new Thread(delegate()
+                Thread thread = new Thread(delegate()
                 {
                     try
                     {
@@ -453,8 +450,13 @@ namespace Plugin
                         Thread.CurrentThread.Abort();
                     }
                 });
+
+                thread.IsBackground = true;
+                thread.Name = type.ToString();
+                _threadAlive.Add(type.ToString(), thread);
                 thread.Start();
             }
+
         }
     }
 }
