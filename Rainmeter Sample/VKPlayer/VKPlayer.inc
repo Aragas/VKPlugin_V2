@@ -2,14 +2,15 @@
 Measure=Plugin
 Plugin=VKPlugin.dll
 Type=Player
-PlayerType=STATUS
+PlayerType=SETTINGS
+SaveAudio=False
 
 [State]
 Measure=Plugin
 Plugin=VKPlugin.dll
 Type=Player
 PlayerType=STATE
-Substitute="0":"Player\MusicPlay.W.png","1":"Player\MusicPause.W.png","2":"Player\MusicPlay.W.png"
+Substitute="0":"Player\MusicPlay.W.png","1":"Player\MusicPause.W.png","0":"Player\MusicPlay.W.png"
 
 [Artist]
 Measure=Plugin
@@ -88,7 +89,7 @@ Meter=Image
 MeterStyle=StyleButtons
 ImageName=Player\MusicRepeat.W.png
 ImageAlpha=[Repeat]
-LeftMouseUpAction=[!CommandMeasure "VKPlugin" "SetPosition +10"][!Update]
+LeftMouseUpAction=[!CommandMeasure "VKPlugin" "SetRepeat -1"][!Update]
 DynamicVariables=1
 
 [MeterShuffle]
