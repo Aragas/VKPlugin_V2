@@ -255,6 +255,7 @@ namespace Plugin
                     _type = MeasureType.PlayerType;
                     string playertype = api.ReadString("PlayerType", "");
 
+                    #region Player
                     switch (playertype.ToUpperInvariant())
                     {
                         // For autoplay.
@@ -262,6 +263,7 @@ namespace Plugin
                             _audioType = PlayerType.State;
                             break;
                     }
+                    #endregion Player
 
                     break;
 
@@ -317,14 +319,14 @@ namespace Plugin
                     break;
             }
 
-            //#region Update
+            #region Update
             //UpdateCounter++;
             //if (UpdateCounter >= UpdateRate)
             //{
             //    UpdateCounter = 0;
             //    if (UpdatedString) UpdatedString = false;
             //}
-            //#endregion
+            #endregion
 
             return 0.0;
         }
@@ -409,7 +411,7 @@ namespace Plugin
         /// <summary>
         /// Called from TypeIsAlive(). (Using GetMethods())
         /// </summary>
-        void PlayerTypeDispose()
+        static void PlayerTypeDispose()
         {
             Player.Dispose();
         }
@@ -438,7 +440,7 @@ namespace Plugin
                 {
                     try
                     {
-                        while (api.ReadString(type.ToString(), "") != "")
+                        while (!String.IsNullOrEmpty(api.ReadString(type.ToString(), "")))
                         {
                             Thread.Sleep(2000);
                         }

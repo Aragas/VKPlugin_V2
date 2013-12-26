@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace Plugin
@@ -21,9 +20,9 @@ namespace Plugin
 
         }
 
-        public static string DownloadUrl()
+        public static Uri DownloadUrl()
         {
-            return "https://github.com/Aragas/VKPlugin_V2/raw/NM/Update/" + UpdateText;
+            return new Uri("https://github.com/Aragas/VKPlugin_V2/raw/NM/Update/" + UpdateText);
         }
 
         static readonly WebClient Wc = new WebClient();

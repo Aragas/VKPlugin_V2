@@ -87,14 +87,14 @@ namespace Plugin.AudioPlayer
 
         #region Variables
 
-        public static bool Repeat;
-        public static bool Shuffle;
+        public static bool Repeat { get; private set; }
+        public static bool Shuffle { get; private set; }
 
         public static string Artist
         {
             get
             {
-                return Array[_numb].Split('#')[1];
+                return ArrayExists ? Array[_numb].Split('#')[1] : null ;
             }
         }
 
@@ -102,7 +102,7 @@ namespace Plugin.AudioPlayer
         {
             get
             {
-                return Convert.ToInt32(Array[_numb].Split('#')[3]);
+                return ArrayExists ? Convert.ToInt32(Array[_numb].Split('#')[3]) : 0.0;
             }
         }
 
@@ -166,7 +166,7 @@ namespace Plugin.AudioPlayer
         {
             get
             {
-                return Array[_numb].Split('#')[2];
+                return ArrayExists ? Array[_numb].Split('#')[2] : null;
             }
         }
 
@@ -182,6 +182,8 @@ namespace Plugin.AudioPlayer
         /// <param name="id">Your id.</param>
         public static void Execute(string command)
         {
+            if (String.IsNullOrEmpty(command)) return;
+
             if (command == "PlayPause") PlayPause();
             else if (command == "Play") PlayPause();
             else if (command == "Pause") PlayPause();
@@ -244,8 +246,6 @@ namespace Plugin.AudioPlayer
         private static void PlayNew()
         {
             DisposeAudio();
-
-            _waveOut = new WaveOut();
 
             if (FileExists)
             {
@@ -562,7 +562,7 @@ namespace Plugin.AudioPlayer
             //return Player.AudioChannel32;
         }
 
-        private void CopyStream(Stream input, Stream output)
+        private static void CopyStream(Stream input, Stream output)
         {
             byte[] buffer = new byte[32 * 1024];
             int read;

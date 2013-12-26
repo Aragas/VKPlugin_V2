@@ -51,32 +51,41 @@ namespace Rainmeter
             LSLog((int)type, null, ToUnsafe(message));
         }
 
-        public unsafe string GetMeasureName()
+        public unsafe string MeasureName
         {
-            var value = (char*)RmGet((void*)_mRm, 0);
-            return new string(value);
+            get
+            {
+                var value = (char*) RmGet((void*) _mRm, 0);
+                return new string(value);
+            }
         }
 
-        public unsafe string GetSettingsFile()
+        public unsafe string SettingsFile
         {
-            var value = (char*)RmGet((void*)_mRm, 2);
-            return new string(value);
+            get
+            {
+                var value = (char*) RmGet((void*) _mRm, 2);
+                return new string(value);
+            }
         }
 
-        public unsafe IntPtr GetSkin()
+        public unsafe IntPtr Skin
         {
-            return (IntPtr)RmGet((void*)_mRm, 1);
+            get { return (IntPtr) RmGet((void*) _mRm, 1); }
         }
 
-        public unsafe string GetSkinName()
+        public unsafe string SkinName
         {
-            var value = (char*)RmGet((void*)_mRm, 3);
-            return new string(value);
+            get
+            {
+                var value = (char*) RmGet((void*) _mRm, 3);
+                return new string(value);
+            }
         }
 
-        public unsafe IntPtr GetSkinWindow()
+        public unsafe IntPtr SkinWindow
         {
-            return (IntPtr)RmGet((void*)_mRm, 4);
+            get { return (IntPtr) RmGet((void*) _mRm, 4); }
         }
 
         public unsafe double ReadDouble(string option, double defValue)
@@ -129,7 +138,6 @@ namespace Rainmeter
         [DllImport("Rainmeter.dll", CharSet = CharSet.Auto)]
         private static extern unsafe char* RmReplaceVariables(void* rm, char* str);
 
-
         private static unsafe char* ToUnsafe(string s)
         {
             fixed (char* p = s) return p;
@@ -140,7 +148,7 @@ namespace Rainmeter
     ///     Attribute to mark method as exported for DllExporter.exe.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class DllExport : Attribute
+    public sealed class DllExport : Attribute
     {
     }
 }

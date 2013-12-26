@@ -11,12 +11,12 @@ namespace Plugin.Forms
         /// <summary>
         ///     Get your Id (Use after OAuthRun()).
         /// </summary>
-        public static string Id;
+        public static string Id { get; private set; }
 
         /// <summary>
         ///     Get your Token (Use after OAuthRun()).
         /// </summary>
-        public static string Token;
+        public static string Token { get; private set; }
 
         private OAuth()
         {
