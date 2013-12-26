@@ -29,6 +29,8 @@ Measure=Plugin
 Plugin=VKPlugin.dll
 Type=Player
 PlayerType=PROGRESS
+MaxValue=1
+MaxValue=0
 
 [Repeat]
 Measure=Plugin
