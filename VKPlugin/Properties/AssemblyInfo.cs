@@ -10,5 +10,5 @@
 #endif
 
 [assembly: AssemblyProduct("Rainmeter")]
-[assembly: AssemblyTitle("VKPlayer")]
+[assembly: AssemblyTitle("VKPlugin")]
 [assembly: AssemblyDescription("Plugin for Rainmeter")]

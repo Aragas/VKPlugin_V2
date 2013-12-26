@@ -1,5 +1,4 @@
-﻿using System.Windows.Forms;
-using Plugin.AudioPlayer;
+﻿using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
 using Rainmeter;
@@ -7,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace Plugin
 {
@@ -56,7 +56,7 @@ namespace Plugin
         
         internal Measure()
         {
-            ThreadAlive = new Dictionary<string, Thread>();
+            _threadAlive = new Dictionary<string, Thread>();
         }
 
         /// <summary>
@@ -67,7 +67,6 @@ namespace Plugin
         internal void Initialize(API api)
         {
             #region Initialization
-            Info.Initialize();
 
             if (Path == null)
             {
@@ -80,7 +79,7 @@ namespace Plugin
             //{
             //}
 
-            #endregion
+            #endregion Initialization
 
             string type = api.ReadString("Type", "");
 
@@ -147,6 +146,7 @@ namespace Plugin
                     break;
 
                 case "FRIENDS":
+                    Info.Initialize();
                     _type = MeasureType.FriendsType;
                     _userCount = api.ReadInt("UserType", 1);
                     if (FriendsCount == null)
@@ -420,7 +420,7 @@ namespace Plugin
     /// </summary>
     internal partial class Measure
     {
-        Dictionary<string, Thread> ThreadAlive;
+        readonly Dictionary<string, Thread> _threadAlive;
 
         /// <summary>
         /// Call this to monitor is your skin is alive. 
@@ -430,9 +430,9 @@ namespace Plugin
         /// <param name="type">MeasureType</param>
         internal void TypeIsAlive(API api, MeasureType type)
         {
-            if (!ThreadAlive.ContainsKey(type.ToString()) ||
-                !ThreadAlive[type.ToString()].IsAlive ||
-                ThreadAlive[type.ToString()] == null)
+            if (!_threadAlive.ContainsKey(type.ToString()) ||
+                !_threadAlive[type.ToString()].IsAlive ||
+                _threadAlive[type.ToString()] == null)
             {
                 Thread thread = new Thread(delegate()
                 {
@@ -463,11 +463,12 @@ namespace Plugin
 
                         Thread.CurrentThread.Abort();
                     }
-                });
+                })
+                {
+                    IsBackground = true
+                };
 
-                thread.IsBackground = true;
-                thread.Name = type.ToString();
-                ThreadAlive.Add(type.ToString(), thread);
+                _threadAlive.Add(type.ToString(), thread);
                 thread.Start();
             }
 
