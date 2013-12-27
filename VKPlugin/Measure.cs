@@ -56,7 +56,14 @@ namespace Plugin
         
         internal Measure()
         {
+            Info.Initialize();
             _threadAlive = new Dictionary<string, Thread>();
+
+
+            if (Updates.UpdateAvailable() && Updates.DownloadUpdate())
+            {
+                API.Log(API.LogType.Error, "Works");
+            }
         }
 
         /// <summary>
@@ -146,7 +153,6 @@ namespace Plugin
                     break;
 
                 case "FRIENDS":
-                    Info.Initialize();
                     _type = MeasureType.FriendsType;
                     _userCount = api.ReadInt("UserType", 1);
                     if (FriendsCount == null)

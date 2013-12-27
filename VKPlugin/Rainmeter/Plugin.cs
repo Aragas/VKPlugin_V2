@@ -6,7 +6,7 @@ namespace Rainmeter
 {
     public static class Plugin
     {
-        static Dictionary<uint, Measure> Measures = new Dictionary<uint, Measure>();
+        static readonly Dictionary<uint, Measure> Measures = new Dictionary<uint, Measure>();
 
         [DllExport]
         public static unsafe void Initialize(void** data, void* rm)
