@@ -1,4 +1,5 @@
-﻿using Plugin.AudioPlayer;
+﻿using System.Diagnostics;
+using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
 using Rainmeter;
@@ -19,7 +20,7 @@ namespace Plugin
         public static string Path { get; private set; }
         public static string SaveAudio { get; private set; }
 
-        int _userCount = 1;
+        static int _userCount = 1;
 
         internal enum MeasureType
         {
@@ -56,13 +57,15 @@ namespace Plugin
         
         internal Measure()
         {
-            Info.Initialize();
-            _threadAlive = new Dictionary<string, Thread>();
-
-
-            if (Updates.UpdateAvailable() && Updates.DownloadUpdate())
+            if (!WasCreatedOnce.ContainsKey("Measure"))
             {
-                API.Log(API.LogType.Error, "Works");
+                Info.Initialize();
+
+                if (Updates.UpdateAvailable && Updates.DownloadUpdate)
+                {
+                    Process.Start(Updates.DownloadUrl);
+                }
+                WasCreatedOnce.Add("Measure", true);
             }
         }
 
@@ -74,18 +77,12 @@ namespace Plugin
         internal void Initialize(API api)
         {
             #region Initialization
-
             if (Path == null)
             {
                 string path = api.ReadPath("Type", "");
                 if (!String.IsNullOrEmpty(path))
                     Path = path.Replace("\\" + path.Split('\\')[7], "\\");
             }
-
-            //if (Updates.UpdateAvailable() && Updates.DownloadUpdate())
-            //{
-            //}
-
             #endregion Initialization
 
             string type = api.ReadString("Type", "");
@@ -417,7 +414,7 @@ namespace Plugin
         /// <summary>
         /// Called from TypeIsAlive(). (Using GetMethods())
         /// </summary>
-        static void PlayerTypeDispose()
+        void PlayerTypeDispose()
         {
             Player.Dispose();
         }
@@ -428,7 +425,7 @@ namespace Plugin
     /// </summary>
     internal partial class Measure
     {
-        readonly Dictionary<string, Thread> _threadAlive;
+        static readonly Dictionary<string, Thread> ThreadAlive = new Dictionary<string, Thread>();
 
         /// <summary>
         /// Call this to monitor is your skin is alive. 
@@ -438,9 +435,9 @@ namespace Plugin
         /// <param name="type">MeasureType</param>
         internal void TypeIsAlive(API api, MeasureType type)
         {
-            if (!_threadAlive.ContainsKey(type.ToString()) ||
-                !_threadAlive[type.ToString()].IsAlive ||
-                _threadAlive[type.ToString()] == null)
+            if (!ThreadAlive.ContainsKey(type.ToString()) ||
+                !ThreadAlive[type.ToString()].IsAlive ||
+                ThreadAlive[type.ToString()] == null)
             {
                 Thread thread = new Thread(delegate()
                 {
@@ -476,10 +473,19 @@ namespace Plugin
                     IsBackground = true
                 };
 
-                _threadAlive.Add(type.ToString(), thread);
+                ThreadAlive.Add(type.ToString(), thread);
                 thread.Start();
             }
 
         }
     }
+
+    /// <summary>
+    /// Use it if you need call/check anything just once
+    /// </summary>
+    internal partial class Measure
+    {
+        static readonly Dictionary<string, bool> WasCreatedOnce = new Dictionary<string, bool>();
+    }
+
 }

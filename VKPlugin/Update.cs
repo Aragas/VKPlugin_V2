@@ -6,23 +6,26 @@ namespace Plugin
 {
     public static class Updates
     {
-        public static bool UpdateAvailable()
+        public static bool UpdateAvailable
         {
-            return string.Equals(DllVersion, UpdateVersion);
+            get { return !string.Equals(DllVersion, UpdateVersion); }
         }
 
-        public static bool DownloadUpdate()
+        public static bool DownloadUpdate
         {
-            DialogResult dialogResult = MessageBox.Show("New update available" + Environment.NewLine + " Download?",
-                "VKPlugin", MessageBoxButtons.YesNo);
+            get
+            {
+                DialogResult dialogResult = MessageBox.Show("New update available" + Environment.NewLine + " Download?",
+                    "VKPlugin", MessageBoxButtons.YesNo);
 
-            return dialogResult == DialogResult.Yes;
+                return dialogResult == DialogResult.Yes;
+            }
 
         }
 
-        public static string DownloadUrl()
+        public static string DownloadUrl
         {
-            return "https://github.com/Aragas/VKPlugin_V2/raw/NM/Update/" + UpdateText;
+            get { return "https://github.com/Aragas/VKPlugin_V2/raw/NM/Update/" + UpdateText; }
         }
 
         static readonly WebClient Wc = new WebClient();
