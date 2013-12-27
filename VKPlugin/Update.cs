@@ -15,8 +15,8 @@ namespace Plugin
         {
             get
             {
-                DialogResult dialogResult = MessageBox.Show("New update available" + Environment.NewLine + " Download?",
-                    "VKPlugin", MessageBoxButtons.YesNo);
+                DialogResult dialogResult = MessageBox.Show("New update available" + Environment.NewLine + "Download?",
+                    "VKPlayer", MessageBoxButtons.YesNo);
 
                 return dialogResult == DialogResult.Yes;
             }

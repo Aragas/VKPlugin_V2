@@ -1,13 +1,13 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
+using System.Threading;
+using System.Windows.Forms;
 using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
 using Rainmeter;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading;
-using System.Windows.Forms;
 
 namespace Plugin
 {
@@ -59,10 +59,6 @@ namespace Plugin
         {
             if (!WasCreatedOnce.ContainsKey("Measure"))
             {
-                if (Updates.UpdateAvailable && Updates.DownloadUpdate)
-                {
-                    Process.Start(Updates.DownloadUrl);
-                }
 
                 WasCreatedOnce.Add("Measure", true);
             }
@@ -80,6 +76,10 @@ namespace Plugin
             {
                 Info.Initialize();
 
+                if (Updates.UpdateAvailable && Updates.DownloadUpdate)
+                {
+                    Process.Start(Updates.DownloadUrl);
+                }
 
                 UpdateRate = api.ReadInt("UpdateRate", 5);
                 if (UpdateRate <= 0)
