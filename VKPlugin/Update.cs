@@ -20,9 +20,9 @@ namespace Plugin
 
         }
 
-        public static Uri DownloadUrl()
+        public static string DownloadUrl()
         {
-            return new Uri("https://github.com/Aragas/VKPlugin_V2/raw/NM/Update/" + UpdateText);
+            return "https://github.com/Aragas/VKPlugin_V2/raw/NM/Update/" + UpdateText;
         }
 
         static readonly WebClient Wc = new WebClient();
