@@ -20,7 +20,7 @@ namespace Plugin
         public static string Path { get; private set; }
         public static string SaveAudio { get; private set; }
 
-        static int _userCount = 1;
+        int _userCount = 1;
 
         internal enum MeasureType
         {
@@ -59,12 +59,11 @@ namespace Plugin
         {
             if (!WasCreatedOnce.ContainsKey("Measure"))
             {
-                Info.Initialize();
-
                 if (Updates.UpdateAvailable && Updates.DownloadUpdate)
                 {
                     Process.Start(Updates.DownloadUrl);
                 }
+
                 WasCreatedOnce.Add("Measure", true);
             }
         }
@@ -77,6 +76,22 @@ namespace Plugin
         internal void Initialize(API api)
         {
             #region Initialization
+            if (!WasCreatedOnce.ContainsKey("Initialize"))
+            {
+                Info.Initialize();
+
+
+                UpdateRate = api.ReadInt("UpdateRate", 5);
+                if (UpdateRate <= 0)
+                {
+                    UpdateRate = 5;
+                }
+
+
+
+                WasCreatedOnce.Add("Initialize", true);
+            }
+
             if (Path == null)
             {
                 string path = api.ReadPath("Type", "");
@@ -90,8 +105,10 @@ namespace Plugin
             switch (type.ToUpperInvariant())
             {
                 case "PLAYER":
-                    TypeIsAlive(api, MeasureType.PlayerType);
                     _type = MeasureType.PlayerType;
+
+                    TypeIsAlive(api, _type);
+
                     string playertype = api.ReadString("PlayerType", "");
 
                     #region Player
@@ -151,9 +168,11 @@ namespace Plugin
 
                 case "FRIENDS":
                     _type = MeasureType.FriendsType;
+
                     _userCount = api.ReadInt("UserType", 1);
                     if (FriendsCount == null)
                         FriendsCount = api.ReadString("FriendsCount", "1");
+
                     string friendtype = api.ReadString("FriendType", "");
 
                     #region Friends
@@ -186,6 +205,7 @@ namespace Plugin
 
                 case "MESSAGES":
                     _type = MeasureType.MessagesType;
+
                     break;
 
                 default:
@@ -193,14 +213,6 @@ namespace Plugin
                         (API.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
                     break;
             }
-
-            //#region Update
-            //UpdateRate = rm.ReadInt("UpdateRate", 20);
-            //if (UpdateRate <= 0)
-            //{
-            //    UpdateRate = 20;
-            //}
-            //#endregion
         }
 
         /// <summary>
@@ -286,50 +298,36 @@ namespace Plugin
             switch (_type)
             {
                 case MeasureType.MessagesType:
-                    //if (UpdateCounter(Type.MessagesType) == 0)
-                    {
-                        return (Info.MessagesUnReadCount >= 1) ? 1 : 0;
-                    }
-                    break;
+                    return (Info.MessagesUnReadCount >= 1) ? 1 : 0;
 
                 case MeasureType.PlayerType:
-                    //if (UpdateCounter(Type.PlayerType) == 0)
+
+                    #region Player
+                    switch (_audioType)
                     {
-                        #region Player
-                        switch (_audioType)
-                        {
-                            case PlayerType.Duration:
-                                return Player.Duration;
+                        case PlayerType.Duration:
+                            return Player.Duration;
 
-                            case PlayerType.Position:
-                                return Math.Round(Player.Position);
+                        case PlayerType.Position:
+                            return Math.Round(Player.Position);
 
-                            case PlayerType.State:
-                                if (Player.Played) Player.PlayNext();
-                                return Player.State;
+                        case PlayerType.State:
+                            if (Player.Played) Player.PlayNext();
+                            return Player.State;
 
-                            case PlayerType.Repeat:
-                                return Player.Repeat ? 0.0 : 1.0;
+                        case PlayerType.Repeat:
+                            return Player.Repeat ? 0.0 : 1.0;
 
-                            case PlayerType.Shuffle:
-                                return Player.Shuffle ? 0.0 : 1.0;
+                        case PlayerType.Shuffle:
+                            return Player.Shuffle ? 0.0 : 1.0;
 
-                            case PlayerType.Progress:
-                                return Player.Progress;
-                        }
-                        #endregion Player
+                        case PlayerType.Progress:
+                            return Player.Progress;
                     }
+                    #endregion Player
+
                     break;
             }
-
-            #region Update
-            //UpdateCounter++;
-            //if (UpdateCounter >= UpdateRate)
-            //{
-            //    UpdateCounter = 0;
-            //    if (UpdatedString) UpdatedString = false;
-            //}
-            #endregion
 
             return 0.0;
         }
@@ -339,44 +337,46 @@ namespace Plugin
             switch (_type)
             {
                 case MeasureType.FriendsType:
-                    //if (UpdatedString(Type.FriendsType))
+
+                    #region Friends
+
+                    switch (_friendsType)
                     {
-                        #region Friends
-                        switch (_friendsType)
-                        {
-                            case FriendsType.Name:
-                                return Info.FriendsUserData(_userCount)[0];
-                                
-                            case FriendsType.Id:
-                                return Info.FriendsUserData(_userCount)[1];
+                        case FriendsType.Name:
+                            return Info.FriendsUserData(_userCount)[0];
 
-                            case FriendsType.Photo:
-                                return Info.FriendsUserData(_userCount)[2];
+                        case FriendsType.Id:
+                            return Info.FriendsUserData(_userCount)[1];
 
-                            case FriendsType.Status:
-                                return Info.FriendsUserData(_userCount)[3];
-                        }
-                        #endregion Friends
+                        case FriendsType.Photo:
+                            return Info.FriendsUserData(_userCount)[2];
+
+                        case FriendsType.Status:
+                            return Info.FriendsUserData(_userCount)[3];
                     }
+
+                    #endregion Friends
+
                     break;
 
                 case MeasureType.PlayerType:
-                    //if (UpdatedString(Type.PlayerType))
+
+                    #region Player
+
+                    switch (_audioType)
                     {
-                        #region Player
-                        switch (_audioType)
-                        {
-                            case PlayerType.Settings:
-                                return "VKPlayer by Aragas (Aragasas)";
+                        case PlayerType.Settings:
+                            return "VKPlayer by Aragas (Aragasas)";
 
-                            case PlayerType.Artist:
-                                return Player.Artist ?? "Not Authorized";
+                        case PlayerType.Artist:
+                            return Player.Artist ?? "Not Authorized";
 
-                            case PlayerType.Title:
-                                return Player.Title ?? "Click Play";
-                        }
-                        #endregion Player
+                        case PlayerType.Title:
+                            return Player.Title ?? "Click Play";
                     }
+
+                    #endregion Player
+
                     break;
             }
             return null;
@@ -407,10 +407,6 @@ namespace Plugin
         {
         }
 
-        //bool UpdatedString(Type type) {}
-        //int UpdateCounter(Type type) {}
-        //int UpdateRate;
-
         /// <summary>
         /// Called from TypeIsAlive(). (Using GetMethods())
         /// </summary>
@@ -425,7 +421,7 @@ namespace Plugin
     /// </summary>
     internal partial class Measure
     {
-        static readonly Dictionary<string, Thread> ThreadAlive = new Dictionary<string, Thread>();
+        static readonly Dictionary<MeasureType, Thread> ThreadAlive = new Dictionary<MeasureType, Thread>();
 
         /// <summary>
         /// Call this to monitor is your skin is alive. 
@@ -435,9 +431,9 @@ namespace Plugin
         /// <param name="type">MeasureType</param>
         internal void TypeIsAlive(API api, MeasureType type)
         {
-            if (!ThreadAlive.ContainsKey(type.ToString()) ||
-                !ThreadAlive[type.ToString()].IsAlive ||
-                ThreadAlive[type.ToString()] == null)
+            if (!ThreadAlive.ContainsKey(type) ||
+                !ThreadAlive[type].IsAlive ||
+                ThreadAlive[type] == null)
             {
                 Thread thread = new Thread(delegate()
                 {
@@ -473,7 +469,7 @@ namespace Plugin
                     IsBackground = true
                 };
 
-                ThreadAlive.Add(type.ToString(), thread);
+                ThreadAlive.Add(type, thread);
                 thread.Start();
             }
 
@@ -488,4 +484,15 @@ namespace Plugin
         static readonly Dictionary<string, bool> WasCreatedOnce = new Dictionary<string, bool>();
     }
 
+    /// <summary>
+    /// Update part of Measure.
+    /// </summary>
+    internal partial class Measure
+    {
+        static readonly Dictionary<MeasureType, int> UpdatedDouble = new Dictionary<MeasureType, int>();
+        static readonly Dictionary<MeasureType, int> UpdatedString = new Dictionary<MeasureType, int>();
+
+        static int UpdateRate;
+
+    }
 }
