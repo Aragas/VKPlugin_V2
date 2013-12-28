@@ -54,11 +54,16 @@ namespace Plugin
         }
         PlayerType _audioType;
 
-        
+        /// <summary>
+        /// Called when Rainmeter is launched. Just once.
+        /// Is called before skin gets data.
+        /// </summary>
         internal Measure()
         {
             if (!WasCreatedOnce.ContainsKey("Measure"))
             {
+                // Put code here.
+
 
                 WasCreatedOnce.Add("Measure", true);
             }
@@ -69,7 +74,7 @@ namespace Plugin
         /// Initialize your measure object here.
         /// </summary>
         /// <param name="api">Rainmeter API</param>
-        internal void Initialize(API api)
+        internal void Initialize(Rainmeter.API api)
         {
             #region Initialization
             if (!WasCreatedOnce.ContainsKey("Initialize"))
@@ -222,7 +227,7 @@ namespace Plugin
         /// </summary>
         /// <param name="api">Rainmeter API</param>
         /// <param name="maxValue">Max Value</param>
-        internal void Reload(API api, ref double maxValue)
+        internal void Reload(Rainmeter.API api, ref double maxValue)
         {
             string type = api.ReadString("Type", "");
 
