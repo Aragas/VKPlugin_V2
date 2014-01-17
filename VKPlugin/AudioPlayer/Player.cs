@@ -415,7 +415,7 @@ namespace Plugin.AudioPlayer
         {
             get
             {
-                string path = Measure.Path + "Music\\";
+                string path = Measure.MeasurePath[Measure.MeasureType.PlayerType] + "Music\\";
 
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);

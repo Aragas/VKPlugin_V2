@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
-using System.Windows.Forms;
 using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
@@ -17,17 +15,14 @@ namespace Plugin
     internal partial class Measure
     {
         public static string FriendsCount { get; private set; }
-        public static string Path { get; private set; }
         public static string SaveAudio { get; private set; }
 
+        public static Dictionary<MeasureType, string> MeasurePath = new Dictionary<MeasureType, string>();
+
+        private const int DefaultUpdateRate = 20;
         int _userCount = 1;
 
-        internal enum MeasureType
-        {
-            PlayerType,
-            FriendsType,
-            MessagesType
-        }
+        internal enum MeasureType { PlayerType, FriendsType, MessagesType, Nothing }
         MeasureType _type;
 
         enum FriendsType
@@ -60,13 +55,6 @@ namespace Plugin
         /// </summary>
         internal Measure()
         {
-            if (!WasCreatedOnce.ContainsKey("Measure"))
-            {
-                // Put code here.
-
-
-                WasCreatedOnce.Add("Measure", true);
-            }
         }
 
         /// <summary>
@@ -76,54 +64,44 @@ namespace Plugin
         /// <param name="api">Rainmeter API</param>
         internal void Initialize(Rainmeter.API api)
         {
-            #region Initialization
-            if (!WasCreatedOnce.ContainsKey("Initialize"))
-            {
-                Info.Initialize();
-
-                if (Updates.UpdateAvailable && Updates.DownloadUpdate)
-                {
-                    Process.Start(Updates.DownloadUrl);
-                }
-
-                UpdateRate = api.ReadInt("UpdateRate", 5);
-                if (UpdateRate <= 0)
-                {
-                    UpdateRate = 5;
-                }
-
-
-
-                WasCreatedOnce.Add("Initialize", true);
-            }
-
-            if (Path == null)
-            {
-                string path = api.ReadPath("Type", "");
-                if (!String.IsNullOrEmpty(path))
-                    Path = path.Replace("\\" + path.Split('\\')[7], "\\");
-            }
-            #endregion Initialization
-
             string type = api.ReadString("Type", "");
-
             switch (type.ToUpperInvariant())
             {
+                case "LIST":
+                    if (FriendsCount == null)
+                        FriendsCount = api.ReadString("FriendsCount", "1");
+                    break;
+
                 case "PLAYER":
                     _type = MeasureType.PlayerType;
-
+                    
+                    // Start TypeIsAlive() monitor.
                     TypeIsAlive(api, _type);
 
-                    string playertype = api.ReadString("PlayerType", "");
+                    #region Path + LoadDll
+                    if (!MeasurePath.ContainsKey(_type))
+                    {
+                        string path = api.ReadPath("Type", "");
+                        path = path.Replace("\\" + path.Split('\\')[7], "\\");
+                        MeasurePath.Add(_type, path);
+
+                        // Load NAudio library. 
+                        AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
+                        {
+                            var pathc = string.Format(path + "{0}.dll", "NAudio");
+                            return Assembly.LoadFrom(pathc);
+                        };
+                    }
+                    #endregion Path + LoadDll
 
                     #region Player
+                    string playertype = api.ReadString("PlayerType", "");
                     switch (playertype.ToUpperInvariant())
                     {
                         case "SETTINGS":
                             _audioType = PlayerType.Settings;
-                            
+
                             SaveAudio = api.ReadString("SaveAudio", "FALSE").ToUpperInvariant();
-                                
                             break;
 
                         case "STATE":
@@ -173,14 +151,31 @@ namespace Plugin
 
                 case "FRIENDS":
                     _type = MeasureType.FriendsType;
-
                     _userCount = api.ReadInt("UserType", 1);
-                    if (FriendsCount == null)
-                        FriendsCount = api.ReadString("FriendsCount", "1");
 
-                    string friendtype = api.ReadString("FriendType", "");
+                    #region Path
+                    if (!MeasurePath.ContainsKey(_type))
+                    {
+                        string path = api.ReadPath("Type", "");
+                        path = path.Replace("\\" + path.Split('\\')[7], "\\");
+                        MeasurePath.Add(_type, path);
+                    }
+                    #endregion Path
 
+                    #region Update
+                    if (!TwoUpdateRate.ContainsKey(_type))
+                        TwoUpdateRate.Add(_type, new Dictionary<int, int>());
+                    if (!TwoUpdateRate[_type].ContainsKey(_userCount))
+                        TwoUpdateRate[_type].Add(_userCount, (int)api.ReadDouble("UpdateRate", DefaultUpdateRate));
+
+                    if (!TwoUpdateCounter.ContainsKey(_type))
+                        TwoUpdateCounter.Add(_type, new Dictionary<int, int>());
+                    if (!TwoUpdateCounter[_type].ContainsKey(_userCount))
+                        TwoUpdateCounter[_type].Add(_userCount, 20);
+                    #endregion Update
+                    
                     #region Friends
+                    string friendtype = api.ReadString("FriendType", "");
                     switch (friendtype.ToUpperInvariant())
                     {
                         case "NAME":
@@ -210,6 +205,14 @@ namespace Plugin
 
                 case "MESSAGES":
                     _type = MeasureType.MessagesType;
+                       
+                    #region Update
+                    if (!OneUpdateRate.ContainsKey(_type))
+                        OneUpdateRate.Add(_type, (int)api.ReadDouble("UpdateRate", DefaultUpdateRate));
+
+                    if (!OneUpdateCounter.ContainsKey(_type))
+                        OneUpdateCounter.Add(_type, 20);
+                    #endregion Update
 
                     break;
 
@@ -236,38 +239,45 @@ namespace Plugin
                 case "FRIENDS":
                     _type = MeasureType.FriendsType;
                     _userCount = api.ReadInt("UserType", 1);
-                    string friendtype = api.ReadString("FriendType", "");
 
-                    #region Friends
-                    switch (friendtype.ToUpperInvariant())
+                    #region Update
+                    TwoUpdateCounter[_type][_userCount]++;
+
+                    if (TwoUpdateRate[_type][_userCount] < TwoUpdateCounter[_type][_userCount])
                     {
-                        case "NAME":
-                            _friendsType = FriendsType.Name;
-                            break;
+                        Info.UpdateFriends();
+                        string friendtype = api.ReadString("FriendType", "");
+                        switch (friendtype.ToUpperInvariant())
+                        {
+                            case "NAME": _friendsType = FriendsType.Name; break;
+                            case "PHOTO": _friendsType = FriendsType.Photo; break;
+                            case "ID": _friendsType = FriendsType.Id; break;
+                            case "STATUS": _friendsType = FriendsType.Status; break;
 
-                        case "PHOTO":
-                            _friendsType = FriendsType.Photo;
-                            break;
-
-                        case "ID":
-                            _friendsType = FriendsType.Id;
-                            break;
-
-                        case "STATUS":
-                            _friendsType = FriendsType.Status;
-                            break;
-
-                        default:
-                            API.Log
-                                (API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
-                            break;
+                            default:
+                                API.Log
+                                    (API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
+                                break;
+                        }
+                        TwoUpdateCounter[_type][_userCount] = 0;
                     }
-                    #endregion Friends
+                    #endregion Update
 
                     break;
-
+                
                 case "MESSAGES":
                     _type = MeasureType.MessagesType;
+
+                    #region Update
+                    OneUpdateCounter[_type]++;
+
+                    if (OneUpdateRate[_type] < OneUpdateCounter[_type])
+                    {
+                        Info.UpdateMessages();
+                        OneUpdateCounter[_type] = 0;
+                    }
+                    #endregion Update
+
                     break;
 
 
@@ -298,7 +308,7 @@ namespace Plugin
         /// Called on every update cycle (usually once per second).
         /// </summary>
         /// <returns>Return the numerical value for the measure here.</returns>
-        internal double Update()
+        internal double GetDouble()
         {
             switch (_type)
             {
@@ -471,22 +481,15 @@ namespace Plugin
                     }
                 })
                 {
+                    Name = "ThreadMonitor" + type,
                     IsBackground = true
                 };
 
                 ThreadAlive.Add(type, thread);
-                thread.Start();
+                ThreadAlive[type].Start();
             }
 
         }
-    }
-
-    /// <summary>
-    /// Use it if you need call/check anything just once
-    /// </summary>
-    internal partial class Measure
-    {
-        static readonly Dictionary<string, bool> WasCreatedOnce = new Dictionary<string, bool>();
     }
 
     /// <summary>
@@ -494,10 +497,27 @@ namespace Plugin
     /// </summary>
     internal partial class Measure
     {
-        static readonly Dictionary<MeasureType, int> UpdatedDouble = new Dictionary<MeasureType, int>();
-        static readonly Dictionary<MeasureType, int> UpdatedString = new Dictionary<MeasureType, int>();
+        private static Dictionary<MeasureType, int> OneUpdateRate = new Dictionary<MeasureType, int>();
+        private static Dictionary<MeasureType, int> OneUpdateCounter = new Dictionary<MeasureType, int>();
 
-        static int UpdateRate;
+        private static TwoKeyDictionary<MeasureType, int, int> TwoUpdateRate =
+            new TwoKeyDictionary<MeasureType, int, int>();
+        private static TwoKeyDictionary<MeasureType, int, int> TwoUpdateCounter =
+            new TwoKeyDictionary<MeasureType, int, int>();
 
+        private static ThreeKeyDictionary<MeasureType, int, int, int> ThreeUpdateRate =
+    new ThreeKeyDictionary<MeasureType, int, int, int>();
+        private static ThreeKeyDictionary<MeasureType, int, int, int> ThreeUpdateCounter =
+            new ThreeKeyDictionary<MeasureType, int, int, int>();
+
+        public class TwoKeyDictionary<TKey1, TKey2, TValue> :
+            Dictionary<TKey1, Dictionary<TKey2, TValue>>
+        {
+        }
+
+        public class ThreeKeyDictionary<TKey1, TKey2, TKey3, TValue> :
+            Dictionary<TKey1, Dictionary<TKey2, Dictionary<TKey3, TValue>>>
+        {
+        }
     }
 }

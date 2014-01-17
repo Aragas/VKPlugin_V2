@@ -128,15 +128,14 @@ namespace Plugin.Information
 
         #endregion Messages
 
-        public static void Initialize()
+        public static void UpdateFriends()
         {
             _userArray = null;
-            _messagesUnReadCount = null;
         }
 
-        public static void Update()
+        public static void UpdateMessages()
         {
-            // if data is new, make a reload.
+            _messagesUnReadCount = null;
         }
     }
 }
