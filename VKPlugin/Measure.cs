@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Threading;
-using Plugin.AudioPlayer;
+﻿using Plugin.AudioPlayer;
 using Plugin.Forms;
 using Plugin.Information;
 using Rainmeter;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading;
 
 namespace Plugin
 {
@@ -16,38 +16,19 @@ namespace Plugin
     {
         public static string FriendsCount { get; private set; }
         public static string SaveAudio { get; private set; }
-
         public static Dictionary<MeasureType, string> MeasurePath = new Dictionary<MeasureType, string>();
 
         private const int DefaultUpdateRate = 20;
-        int _userCount = 1;
+        private int _userCount = 1;
 
-        internal enum MeasureType { PlayerType, FriendsType, MessagesType, Nothing }
-        MeasureType _type;
+        internal enum MeasureType { PlayerType, FriendsType, MessagesType }
+        private MeasureType _type;
 
-        enum FriendsType
-        {
-            Name,
-            Photo,
-            Id,
-            Status
-        }
-        FriendsType _friendsType;
+        private enum FriendsType { Name, Photo, Id, Status }
+        private FriendsType _friendsType;
 
-        enum PlayerType
-        {
-            Settings,
-            Artist,
-            Title,
-            Duration,
-            Position,
-            State,
-            Repeat,
-            Shuffle,
-            Volume,
-            Progress
-        }
-        PlayerType _audioType;
+        private enum PlayerType { Settings, Artist, Title, Duration, Position, State, Repeat, Shuffle, Volume, Progress }
+        private PlayerType _audioType;
 
         /// <summary>
         /// Called when Rainmeter is launched. Just once.
@@ -58,7 +39,7 @@ namespace Plugin
         }
 
         /// <summary>
-        /// Called when a measure is created (i.e. when Rainmeter is launched or when a skin is refreshed). 
+        /// Called when a measure is created (i.e. when Rainmeter is launched or when a skin is refreshed).
         /// Initialize your measure object here.
         /// </summary>
         /// <param name="api">Rainmeter API</param>
@@ -74,27 +55,30 @@ namespace Plugin
 
                 case "PLAYER":
                     _type = MeasureType.PlayerType;
-                    
+
                     // Start TypeIsAlive() monitor.
                     TypeIsAlive(api, _type);
 
                     #region Path + LoadDll
+
                     if (!MeasurePath.ContainsKey(_type))
                     {
                         string path = api.ReadPath("Type", "");
                         path = path.Replace("\\" + path.Split('\\')[7], "\\");
                         MeasurePath.Add(_type, path);
 
-                        // Load NAudio library. 
+                        // Load NAudio library.
                         AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
                         {
                             var pathc = string.Format(path + "{0}.dll", "NAudio");
                             return Assembly.LoadFrom(pathc);
                         };
                     }
+
                     #endregion Path + LoadDll
 
                     #region Player
+
                     string playertype = api.ReadString("PlayerType", "");
                     switch (playertype.ToUpperInvariant())
                     {
@@ -145,6 +129,7 @@ namespace Plugin
                                 (API.LogType.Error, "VKPlugin.dll PlayerType=" + playertype + " not valid");
                             break;
                     }
+
                     #endregion Player
 
                     break;
@@ -154,15 +139,18 @@ namespace Plugin
                     _userCount = api.ReadInt("UserType", 1);
 
                     #region Path
+
                     if (!MeasurePath.ContainsKey(_type))
                     {
                         string path = api.ReadPath("Type", "");
                         path = path.Replace("\\" + path.Split('\\')[7], "\\");
                         MeasurePath.Add(_type, path);
                     }
+
                     #endregion Path
 
                     #region Update
+
                     if (!TwoUpdateRate.ContainsKey(_type))
                         TwoUpdateRate.Add(_type, new Dictionary<int, int>());
                     if (!TwoUpdateRate[_type].ContainsKey(_userCount))
@@ -172,9 +160,11 @@ namespace Plugin
                         TwoUpdateCounter.Add(_type, new Dictionary<int, int>());
                     if (!TwoUpdateCounter[_type].ContainsKey(_userCount))
                         TwoUpdateCounter[_type].Add(_userCount, 20);
+
                     #endregion Update
-                    
+
                     #region Friends
+
                     string friendtype = api.ReadString("FriendType", "");
                     switch (friendtype.ToUpperInvariant())
                     {
@@ -199,19 +189,22 @@ namespace Plugin
                                 (API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
                             break;
                     }
+
                     #endregion Friends
 
                     break;
 
                 case "MESSAGES":
                     _type = MeasureType.MessagesType;
-                       
+
                     #region Update
+
                     if (!OneUpdateRate.ContainsKey(_type))
                         OneUpdateRate.Add(_type, (int)api.ReadDouble("UpdateRate", DefaultUpdateRate));
 
                     if (!OneUpdateCounter.ContainsKey(_type))
                         OneUpdateCounter.Add(_type, 20);
+
                     #endregion Update
 
                     break;
@@ -241,6 +234,7 @@ namespace Plugin
                     _userCount = api.ReadInt("UserType", 1);
 
                     #region Update
+
                     TwoUpdateCounter[_type][_userCount]++;
 
                     if (TwoUpdateRate[_type][_userCount] < TwoUpdateCounter[_type][_userCount])
@@ -261,14 +255,16 @@ namespace Plugin
                         }
                         TwoUpdateCounter[_type][_userCount] = 0;
                     }
+
                     #endregion Update
 
                     break;
-                
+
                 case "MESSAGES":
                     _type = MeasureType.MessagesType;
 
                     #region Update
+
                     OneUpdateCounter[_type]++;
 
                     if (OneUpdateRate[_type] < OneUpdateCounter[_type])
@@ -276,16 +272,17 @@ namespace Plugin
                         Info.UpdateMessages();
                         OneUpdateCounter[_type] = 0;
                     }
+
                     #endregion Update
 
                     break;
-
 
                 case "PLAYER":
                     _type = MeasureType.PlayerType;
                     string playertype = api.ReadString("PlayerType", "");
 
                     #region Player
+
                     switch (playertype.ToUpperInvariant())
                     {
                         // For autoplay.
@@ -293,6 +290,7 @@ namespace Plugin
                             _audioType = PlayerType.State;
                             break;
                     }
+
                     #endregion Player
 
                     break;
@@ -327,7 +325,7 @@ namespace Plugin
                             return Math.Round(Player.Position);
 
                         case PlayerType.State:
-                            if (Player.Played) Player.PlayNext();
+                            //if (Player.Played) Player.PlayNext();
                             return Player.State;
 
                         case PlayerType.Repeat:
@@ -354,7 +352,6 @@ namespace Plugin
                 case MeasureType.FriendsType:
 
                     #region Friends
-
                     switch (_friendsType)
                     {
                         case FriendsType.Name:
@@ -369,7 +366,6 @@ namespace Plugin
                         case FriendsType.Status:
                             return Info.FriendsUserData(_userCount)[3];
                     }
-
                     #endregion Friends
 
                     break;
@@ -377,7 +373,6 @@ namespace Plugin
                 case MeasureType.PlayerType:
 
                     #region Player
-
                     switch (_audioType)
                     {
                         case PlayerType.Settings:
@@ -389,7 +384,6 @@ namespace Plugin
                         case PlayerType.Title:
                             return Player.Title ?? "Click Play";
                     }
-
                     #endregion Player
 
                     break;
@@ -415,7 +409,7 @@ namespace Plugin
         }
 
         /// <summary>
-        /// Called when a measure is disposed (i.e. when Rainmeter is closed or when a skin is refreshed). 
+        /// Called when a measure is disposed (i.e. when Rainmeter is closed or when a skin is refreshed).
         /// Dispose your measure object here.
         /// </summary>
         internal void Finalize()
@@ -425,7 +419,7 @@ namespace Plugin
         /// <summary>
         /// Called from TypeIsAlive(). (Using GetMethods())
         /// </summary>
-        void PlayerTypeDispose()
+        private void PlayerTypeDispose()
         {
             Player.Dispose();
         }
@@ -436,16 +430,18 @@ namespace Plugin
     /// </summary>
     internal partial class Measure
     {
-        static readonly Dictionary<MeasureType, Thread> ThreadAlive = new Dictionary<MeasureType, Thread>();
+        private static readonly Dictionary<MeasureType, Thread> ThreadAlive = new Dictionary<MeasureType, Thread>();
 
         /// <summary>
-        /// Call this to monitor is your skin is alive. 
+        /// Call this to monitor is your skin is alive.
         /// If not, calls "yourtypename + Dispose" (i.e. SampleTypeDispose()) .
         /// </summary>
         /// <param name="api">Rainmeter API</param>
         /// <param name="type">MeasureType</param>
         internal void TypeIsAlive(API api, MeasureType type)
         {
+            if (ThreadAlive.ContainsKey(type))
+                return;
             if (!ThreadAlive.ContainsKey(type) ||
                 !ThreadAlive[type].IsAlive ||
                 ThreadAlive[type] == null)
@@ -488,7 +484,6 @@ namespace Plugin
                 ThreadAlive.Add(type, thread);
                 ThreadAlive[type].Start();
             }
-
         }
     }
 
@@ -502,11 +497,13 @@ namespace Plugin
 
         private static TwoKeyDictionary<MeasureType, int, int> TwoUpdateRate =
             new TwoKeyDictionary<MeasureType, int, int>();
+
         private static TwoKeyDictionary<MeasureType, int, int> TwoUpdateCounter =
             new TwoKeyDictionary<MeasureType, int, int>();
 
         private static ThreeKeyDictionary<MeasureType, int, int, int> ThreeUpdateRate =
     new ThreeKeyDictionary<MeasureType, int, int, int>();
+
         private static ThreeKeyDictionary<MeasureType, int, int, int> ThreeUpdateCounter =
             new ThreeKeyDictionary<MeasureType, int, int, int>();
 

@@ -18,7 +18,6 @@ namespace Plugin.Methods
 
         public string[] AudioList()
         {
-            var arr3 = new string[0];
             // Parameters.
             const string method = "audio.get.xml?";
             string param = "owner_id=" + Id + "&count=" + "200";
@@ -28,7 +27,6 @@ namespace Plugin.Methods
             doc.Load("https://api.vk.com/method/" + method + param + "&access_token=" + Token);
 
             #region ErrorCheck
-
             XmlNode root = doc.DocumentElement;
             XmlNodeList nodeListError = root.SelectNodes("error_code");
 
@@ -41,11 +39,11 @@ namespace Plugin.Methods
                     Report.Audio.List();
                     return null;
             }
-
             #endregion ErrorCheck
 
-            #region Filtering
+            var arr3 = new string[0];
 
+            #region Filtering
             foreach (XmlNode node in doc.SelectNodes("//audio"))
             {
                 const string space = "#";
@@ -60,10 +58,9 @@ namespace Plugin.Methods
                 Array.Resize(ref arr3, arr3.Length + 1);
                 arr3[arr3.Length - 1] = space + artist + space + title + space + duration + space + url;
             }
+            #endregion Filtering
 
             return arr3;
-
-            #endregion Filtering
         }
 
         // Don't work.

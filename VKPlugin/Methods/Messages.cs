@@ -13,7 +13,7 @@ namespace Plugin.Methods
 
         public int UnReadMessages()
         {
-            // Параметры.
+            // Parameters.
             const string method = "account.getCounters.xml?";
             const string param = "&filter=messages";
 
@@ -21,7 +21,6 @@ namespace Plugin.Methods
             doc.Load("https://api.vk.com/method/" + method + param + "&access_token=" + Token);
 
             #region ErrorCheck
-
             XmlNode root = doc.DocumentElement;
             XmlNodeList nodeListError = root.SelectNodes("error_code");
 
@@ -34,7 +33,6 @@ namespace Plugin.Methods
                     Report.Messages.Count();
                     return 0;
             }
-
             #endregion ErrorCheck
 
             string countstring = "0";

@@ -143,12 +143,4 @@ namespace Rainmeter
             fixed (char* p = s) return p;
         }
     }
-
-    /// <summary>
-    ///     Attribute to mark method as exported for DllExporter.exe.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
-    public sealed class DllExport : Attribute
-    {
-    }
 }

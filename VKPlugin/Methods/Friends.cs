@@ -7,11 +7,6 @@ namespace Plugin.Methods
     public class Friends
     {
         /// <summary>
-        ///     Set your Count.
-        /// </summary>
-        public int Count { private get; set; }
-
-        /// <summary>
         ///     Set your Id.
         /// </summary>
         public string Id { private get; set; }
@@ -20,6 +15,11 @@ namespace Plugin.Methods
         ///     Set your Token.
         /// </summary>
         public string Token { private get; set; }
+
+        /// <summary>
+        ///     Set your Count.
+        /// </summary>
+        public int Count { private get; set; }
 
         public string[] OnlineString()
         {
@@ -30,31 +30,30 @@ namespace Plugin.Methods
                 return null;
             doc0.LoadXml(Document);
 
-            var Users = new List<string>();
+            List<string> users = new List<string>();
 
             foreach (XmlNode node in doc0.SelectNodes("//user"))
             {
-                Users.Add(node["uid"].InnerText);
-                Users.Add(node["first_name"].InnerText);
-                Users.Add(node["last_name"].InnerText);
-                Users.Add(node["photo_50"].InnerText);
-                Users.Add(node.SelectSingleNode("online_mobile") == null ? "Online" : "Mobile");
+                users.Add(node["uid"].InnerText);
+                users.Add(node["first_name"].InnerText);
+                users.Add(node["last_name"].InnerText);
+                users.Add(node["photo_50"].InnerText);
+                users.Add(node.SelectSingleNode("online_mobile") == null ? "Online" : "Mobile");
             }
-            return Users.ToArray();
+            return users.ToArray();
         }
 
         private List<string> List()
         {
-            // Параметры конфигурации.
+            // Parameters.
             const string method = "friends.get.xml?";
             string param = "uid=" + Id + "&order=hints" + "&fields=first_name,last_name,photo_50,online";
 
-            //Получение документа.
-            var doc = new XmlDocument();
+            // Getting document.
+            XmlDocument doc = new XmlDocument();
             doc.Load("https://api.vk.com/method/" + method + param + "&access_token=" + Token);
 
             #region ErrorCheck
-
             XmlNode root = doc.DocumentElement;
             XmlNodeList nodeListError = root.SelectNodes("error_code");
 
@@ -67,14 +66,11 @@ namespace Plugin.Methods
                     Report.Friends.List();
                     return null;
             }
-
             #endregion ErrorCheck
 
+            List<string> list = new List<string>();
+
             #region Filtering
-
-            var list = new List<string>();
-
-            // Фильтрация документа по параметру.
             XmlNodeList nodeList = root.SelectNodes("/response/user[online='1']");
 
             list.Add("<main>");
@@ -86,10 +82,9 @@ namespace Plugin.Methods
                 if (x == Count) break;
             }
             list.Add("</main>");
+            #endregion Filtering
 
             return list;
-
-            #endregion Filtering
         }
     }
 }

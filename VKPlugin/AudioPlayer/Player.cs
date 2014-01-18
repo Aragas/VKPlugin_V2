@@ -1,4 +1,5 @@
-﻿using NAudio.CoreAudioApi;
+﻿using System.Runtime.InteropServices;
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using Plugin.ErrorHandler;
 using Plugin.Forms;
@@ -18,23 +19,18 @@ namespace Plugin.AudioPlayer
 
     public static class Player
     {
-        internal enum Playing
-        {
-            Init,
-            Buffering,
-            Ready
-        }
+        internal enum Playing { Init, Buffering, Ready }
         internal static Playing Option;
-
-        internal static WaveChannel32 AudioChannel32;
-
+        
         private static readonly MMDevice DefaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
             (DataFlow.Render, Role.Multimedia);
 
         private static Audio _audio; 
         private static GetFile _gFile;
         private static GetStream _gStream;
-        private static WaveOut _waveOut = new WaveOut();
+        private static WaveStream _waveStream; 
+        private static WaveChannel32 _audioChannel32;
+        private static IWavePlayer _iWavePlayer = new WaveOut();
 
         #region AudioList
 
@@ -65,22 +61,23 @@ namespace Plugin.AudioPlayer
 
         private static string FileName
         {
-            get
-            {
-                return Reverse(Reverse(Array[_numb].Split('#')[4]).Split('/')[0]);
-            }
+            get { return Reverse(Reverse(Array[_numb].Split('#')[4]).Split('/')[0]); }
         }
 
-        private static string Id { get { return OAuth.Id; } }
+        private static string Id
+        {
+            get { return OAuth.Id; } 
+            
+        }
 
-        private static string Token { get { return OAuth.Token; } }
+        private static string Token
+        {
+            get { return OAuth.Token; }
+        }
 
         private static string Url
         {
-            get
-            {
-                return Array[_numb].Split('#')[4];
-            }
+            get { return Array[_numb].Split('#')[4]; }
         }
 
         #endregion AudioList
@@ -92,18 +89,17 @@ namespace Plugin.AudioPlayer
 
         public static string Artist
         {
-            get
-            {
-                return ArrayExists ? Array[_numb].Split('#')[1] : null ;
-            }
+            get { return ArrayExists ? Array[_numb].Split('#')[1] : null ; }
         }
 
         public static double Duration
         {
-            get
-            {
-                return ArrayExists ? Convert.ToInt32(Array[_numb].Split('#')[3]) : 0.0;
-            }
+            get { return ArrayExists ? Convert.ToInt32(Array[_numb].Split('#')[3]) : 0.0; }
+        }
+
+        public static PlaybackState PlaybackState
+        {
+            get { return _iWavePlayer.PlaybackState; }
         }
 
         public static bool Played
@@ -112,7 +108,7 @@ namespace Plugin.AudioPlayer
             {
                 if (Option != Playing.Ready)
                     return false;
-                return AudioChannel32 != null && (Duration < AudioChannel32.CurrentTime.TotalSeconds);
+                return _waveStream != null && (Duration < _waveStream.CurrentTime.TotalSeconds);
             }
         }
 
@@ -120,40 +116,35 @@ namespace Plugin.AudioPlayer
         {
             get
             {
-                if (_waveOut.PlaybackState == PlaybackState.Stopped)
-                    return 0.0;
-                if (!Played)
-                    return AudioChannel32.CurrentTime.TotalSeconds;
+                if (!Played && PlaybackState != PlaybackState.Stopped)
+                    return _waveStream.CurrentTime.TotalSeconds;
                 return 0.0;
             }
         }
 
         public static double Progress
         {
-            get
-            {
-                return Position / Duration;
-            }
+            get { return Position / Duration; }
         }
 
         public static bool SaveAudio
         {
-            get
-            {
-                return Convert.ToBoolean(Measure.SaveAudio);
-            }
+            get { return Convert.ToBoolean(Measure.SaveAudio); }
         }
 
         public static double State
         {
             get
             {
-                switch (_waveOut.PlaybackState)
+                switch (PlaybackState)
                 {
                     case PlaybackState.Playing:
                         return 1.0;
 
                     case PlaybackState.Paused:
+                        return 0.0;
+
+                        case PlaybackState.Stopped:
                         return 0.0;
 
                     default:
@@ -164,10 +155,7 @@ namespace Plugin.AudioPlayer
 
         public static string Title
         {
-            get
-            {
-                return ArrayExists ? Array[_numb].Split('#')[2] : null;
-            }
+            get { return ArrayExists ? Array[_numb].Split('#')[2] : null; }
         }
 
         #endregion Variables
@@ -190,9 +178,12 @@ namespace Plugin.AudioPlayer
             else if (command == "Stop") Stop();
             else if (command == "Next") Next();
             else if (command == "Previous") Previous();
-            else if (command.Contains("SetVolume")) SetVolume(command.Remove(0, 10));
+            else if (command.StartsWith("SetVolume")) SetVolume(command.Remove(0, 10));
             else if (command.Contains("SetShuffle")) SetShuffle(command.Remove(0, 11));
             else if (command.Contains("SetRepeat")) SetRepeat(command.Remove(0, 10));
+            #if DEBUG
+            else if (command.Contains("SetPosition")) SetPosition(command.Remove(0, 12));
+            #endif
             else Report.Player.Command();
         }
 
@@ -220,7 +211,7 @@ namespace Plugin.AudioPlayer
         private static void Next()
         {
             // Check if stopped.
-            if (_waveOut.PlaybackState == PlaybackState.Stopped)
+            if (PlaybackState == PlaybackState.Stopped)
                 return;
 
             // Check if we are at the end of our playlist.
@@ -235,12 +226,12 @@ namespace Plugin.AudioPlayer
 
         private static void Pause()
         {
-            _waveOut.Pause();
+            _iWavePlayer.Pause();
         }
 
         private static void Play()
         {
-            _waveOut.Play();
+            _iWavePlayer.Play();
         }
 
         private static void PlayNew()
@@ -250,19 +241,29 @@ namespace Plugin.AudioPlayer
             if (FileExists)
             {
                 _gFile = new GetFile();
-                AudioChannel32 = _gFile.Wave(FilePath);
-                _waveOut.Init(AudioChannel32);
+                _waveStream = _gFile.Wave(FilePath);
+                _audioChannel32 = new WaveChannel32(_waveStream) {PadWithZeroes = false};
+                _iWavePlayer.Init(_audioChannel32);
+                _iWavePlayer.PlaybackStopped += _waveOut_PlaybackStopped;
+
             }
             else
             {
                 _gStream = new GetStream();
-                AudioChannel32 = _gStream.Wave(Url);
-                _waveOut.Init(AudioChannel32);
+                _waveStream = _gStream.Wave(Url);
+                _audioChannel32 = new WaveChannel32(_waveStream) {PadWithZeroes = false};
+                _iWavePlayer.Init(_audioChannel32);
+                _iWavePlayer.PlaybackStopped += _waveOut_PlaybackStopped;
             }
 
-            AudioChannel32.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
+            _audioChannel32.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
 
-            _waveOut.Play();
+            _iWavePlayer.Play();
+        }
+
+        private static void _waveOut_PlaybackStopped(object sender, StoppedEventArgs e)
+        {
+            PlayNext();
         }
 
         private static void PlayPause()
@@ -271,7 +272,7 @@ namespace Plugin.AudioPlayer
             {
                 case Playing.Ready:
 
-                    switch (_waveOut.PlaybackState)
+                    switch (PlaybackState)
                     {
                         case PlaybackState.Playing:
                             Pause();
@@ -296,7 +297,7 @@ namespace Plugin.AudioPlayer
         private static void Previous()
         {
             // Check if stopped.
-            if (_waveOut.PlaybackState == PlaybackState.Stopped)
+            if (PlaybackState == PlaybackState.Stopped)
                 return;
 
             // Check if we are at the beginning of our playlist.
@@ -370,7 +371,7 @@ namespace Plugin.AudioPlayer
                 try
                 {
                     value = value.Substring(1);
-                    AudioChannel32.Volume += (float)Convert.ToInt32(value) / (float)100;
+                    _audioChannel32.Volume += (float)Convert.ToInt32(value) / (float)100;
                 }
                 catch (FormatException)
                 {
@@ -382,7 +383,7 @@ namespace Plugin.AudioPlayer
                 try
                 {
                     value = value.Substring(1);
-                    AudioChannel32.Volume -= (float)Convert.ToInt32(value) / (float)100;
+                    _audioChannel32.Volume -= (float)Convert.ToInt32(value) / (float)100;
                 }
                 catch (FormatException)
                 {
@@ -393,7 +394,7 @@ namespace Plugin.AudioPlayer
             {
                 try
                 {
-                    AudioChannel32.Volume = (float)Convert.ToInt32(value) / (float)100;
+                    _audioChannel32.Volume = (float)Convert.ToInt32(value) / (float)100;
                 }
                 catch (FormatException)
                 {
@@ -402,9 +403,58 @@ namespace Plugin.AudioPlayer
             }
         }
 
+        // Don't work.
+        private static void SetPosition(string value)
+        {
+#if DEBUG
+            if (Option != Playing.Ready) return;
+            if (value.StartsWith("+") || value.StartsWith("-"))
+            {
+                bool plus = (value.Contains("+"));
+                value = value.Substring(1);
+                double seconds = Convert.ToDouble(value) / 100.0 * Duration;
+
+                if (plus)
+                    _waveStream.CurrentTime += TimeSpan.FromSeconds(seconds);
+                else
+                    _waveStream.CurrentTime -= TimeSpan.FromSeconds(seconds);
+            }
+            else
+            {
+                double seconds = Convert.ToDouble(value) / 100.0 * Duration;
+                _waveStream.CurrentTime = TimeSpan.FromSeconds(seconds);
+            }
+#else
+            if (Option != Playing.Ready) return;
+            if (value.StartsWith("+") || value.StartsWith("-"))
+            {
+                try
+                {
+                    bool plus = (value.Contains("+"));
+                    value = value.Substring(1);
+                    double seconds = Convert.ToDouble(value)/100.0*Duration;
+
+                    if (plus) _waveStream.CurrentTime = _waveStream.CurrentTime.Add(TimeSpan.FromSeconds(seconds));
+                    else _waveStream.CurrentTime = _waveStream.CurrentTime.Subtract(TimeSpan.FromSeconds(seconds));
+                }
+                catch{}
+            }
+            else
+            {
+                try
+                {
+                    double seconds = Convert.ToDouble(value)/100.0*Duration;
+                    _waveStream.CurrentTime = TimeSpan.FromSeconds(seconds);
+                }
+                catch{}
+            }
+#endif
+        }
+
         private static void Stop()
         {
-            _waveOut.Stop();
+            _iWavePlayer.Stop();
+            _waveStream.Position = 0;
         }
 
         #endregion Execute
@@ -426,10 +476,7 @@ namespace Plugin.AudioPlayer
 
         private static bool FileExists
         {
-            get
-            {
-                return (File.Exists(FilePath));
-            }
+            get { return (File.Exists(FilePath)); }
         }
 
         #endregion File
@@ -438,24 +485,25 @@ namespace Plugin.AudioPlayer
         {
             DisposeAudio();
 
-            if (_array != null)
-            {
-                _array = null;
-            }
+            _array = null;
         }
 
         private static void DisposeAudio()
         {
-
-            if (_waveOut != null)
+            if (_iWavePlayer != null)
             {
-                _waveOut.Stop();
+                _iWavePlayer.Stop();
                 //_waveOut.Dispose();
             }
 
-            if (AudioChannel32 != null)
+            if (_waveStream != null)
             {
-                AudioChannel32.Dispose();
+                _waveStream.Dispose();
+            }
+
+            if (_audioChannel32 != null)
+            {
+                _audioChannel32.Dispose();
             }
 
             if (_gStream != null)
@@ -479,7 +527,6 @@ namespace Plugin.AudioPlayer
 
     internal class GetFile : IDisposable
     {
-        private WaveChannel32 _channel;
         private Mp3FileReader _reader;
 
         public void Dispose()
@@ -488,35 +535,32 @@ namespace Plugin.AudioPlayer
             {
                 _reader.Dispose();
             }
-            if (_channel != null)
-            {
-                _channel.Dispose();
-            }
+            //if (_channel != null)
+            //{
+            //    _channel.Dispose();
+            //}
         }
 
-        public WaveChannel32 Wave(string path)
+        public Mp3FileReader Wave(string path)
         {
             _reader = new Mp3FileReader(path);
-            _channel = new WaveChannel32(_reader);
-            //_channel.Volume = Player.AudioChannel32.Volume;
-            return _channel;
-            //Player.AudioChannel32 = _channel;
-            //return Player.AudioChannel32;
+            return _reader;
         }
     }
 
     internal class GetStream : IDisposable
     {
         private readonly Thread _downloadThread;
-        private readonly Stream _ms = new MemoryStream();
-        private readonly Stream _ms1 = new MemoryStream();
-        private WaveChannel32 _channel;
+        private Stream _ms = new MemoryStream();
+        private Stream _ms1 = new MemoryStream();
         private Mp3FileReader _reader;
 
         public GetStream()
         {
             _downloadThread = Player.SaveAudio ? new Thread(DownloadSave) : new Thread(Download);
         }
+
+        public long Position { get { return _ms.Position; } set { _ms.Position = value; }}
 
         private string Url { get; set; }
 
@@ -529,13 +573,13 @@ namespace Plugin.AudioPlayer
             {
                 _reader.Dispose();
             }
-            if (_channel != null)
-            {
-                _channel.Dispose();
-            }
+            //if (_channel != null)
+            //{
+            //    _channel.Dispose();
+            //}
         }
 
-        public WaveChannel32 Wave(string url)
+        public Mp3FileReader Wave(string url)
         {
             Url = url;
 
@@ -555,11 +599,7 @@ namespace Plugin.AudioPlayer
 
             _ms.Position = 0;
             _reader = new Mp3FileReader(_ms);
-            _channel = new WaveChannel32(_reader);
-            //_channel.Volume = Player.AudioChannel32.Volume;
-            return _channel;
-            //Player.AudioChannel32 = _channel;
-            //return Player.AudioChannel32;
+            return _reader;
         }
 
         private static void CopyStream(Stream input, Stream output)
@@ -574,10 +614,10 @@ namespace Plugin.AudioPlayer
 
         private void Download()
         {
-            WebResponse response = WebRequest.Create(Url).GetResponse();
+            using (WebResponse response = WebRequest.Create(Url).GetResponse())
             using (Stream stream = response.GetResponseStream())
             {
-                var buffer = new byte[32 * 1024]; // 32Kb chunks
+                var buffer = new byte[16 * 1024]; // 16Kb chunks
                 int read;
                 while (stream != null && (read = stream.Read(buffer, 0, buffer.Length)) > 0)
                 {
@@ -591,7 +631,7 @@ namespace Plugin.AudioPlayer
 
         private void DownloadSave()
         {
-            WebResponse response = WebRequest.Create(Url).GetResponse();
+            using (WebResponse response = WebRequest.Create(Url).GetResponse())
             using (Stream stream = response.GetResponseStream())
             {
                 var buffer = new byte[32 * 1024]; // 32Kb chunks

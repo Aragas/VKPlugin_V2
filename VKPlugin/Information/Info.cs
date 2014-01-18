@@ -4,6 +4,9 @@ using System;
 
 namespace Plugin.Information
 {
+    /// <summary>
+    /// Static class that store all needed friends and messages information.
+    /// </summary>
     public static class Info
     {
         #region Internal
