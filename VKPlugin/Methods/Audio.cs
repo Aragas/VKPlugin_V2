@@ -6,6 +6,8 @@ namespace Plugin.Methods
 {
     public class Audio
     {
+        private bool _disposed;
+
         /// <summary>
         ///     Set your Id.
         /// </summary>
