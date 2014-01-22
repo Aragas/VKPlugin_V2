@@ -443,8 +443,8 @@ namespace Plugin
             if (ThreadAlive.ContainsKey(type))
                 return;
             if (!ThreadAlive.ContainsKey(type) ||
-                !ThreadAlive[type].IsAlive ||
-                ThreadAlive[type] == null)
+                ThreadAlive[type] == null ||
+                !ThreadAlive[type].IsAlive)
             {
                 Thread thread = new Thread(delegate()
                 {
