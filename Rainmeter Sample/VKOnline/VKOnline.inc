@@ -1,17 +1,25 @@
+[Rainmeter]
+Update=1000
+
 [Variables] 
-;URL=file://%APPDATA%\Rainmeter\Plugins\VKPlugin\OnlineUsers.tmp
 URL1=http://vk.com
 URL2=http://vk.com/images/camera_c.gif
 FontColor=255, 255, 255, 255
 FontColorOn=128, 192, 255, 255
-UPDATE=-1
 
 [MeasureMessages]
 Measure=Plugin
 Plugin=VKPlugin.dll
 Type=Messages
 RegExpSubstitute=1
-Substitute="1":"Message.png","0":""
+Substitute="1":"Resources/Message.png","0":""
+DynamicVariables=1
+
+[MeasureUsers]
+Measure=Plugin
+Plugin=VKPlugin.dll
+Type=List
+FriendsCount=5
 
 [MeasureName1]
 Measure=Plugin
@@ -20,6 +28,8 @@ Type=Friends
 FriendType=Name
 FriendsCount=5
 UserType=1
+FriendsCount=5
+DynamicVariables=1
 
 [MeasureName2]
 Measure=Plugin
@@ -27,6 +37,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Name
 UserType=2
+DynamicVariables=1
 
 [MeasureName3]
 Measure=Plugin
@@ -34,6 +45,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Name
 UserType=3
+DynamicVariables=1
 
 [MeasureName4]
 Measure=Plugin
@@ -41,6 +53,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Name
 UserType=4
+DynamicVariables=1
 
 [MeasureName5]
 Measure=Plugin
@@ -48,6 +61,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Name
 UserType=5
+DynamicVariables=1
 
 -----------------------------------------------------------------------------------
 
@@ -57,6 +71,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Id
 UserType=1
+DynamicVariables=1
 
 [MeasureUID2]
 Measure=Plugin
@@ -64,6 +79,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Id
 UserType=2
+DynamicVariables=1
 
 [MeasureUID3]
 Measure=Plugin
@@ -71,6 +87,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Id
 UserType=3
+DynamicVariables=1
 
 [MeasureUID4]
 Measure=Plugin
@@ -78,6 +95,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Id
 UserType=4
+DynamicVariables=1
 
 [MeasureUID5]
 Measure=Plugin
@@ -85,6 +103,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Id
 UserType=5
+DynamicVariables=1
 ==========================================
 
 [MeasureOnlineIcon1]
@@ -95,6 +114,7 @@ FriendType=Status
 UserType=1
 RegExpSubstitute=1
 Substitute="Online":"", "Mobile":"Resources\Mobile.png"
+DynamicVariables=1
 
 [MeasureOnlineIcon2]
 Measure=Plugin
@@ -104,6 +124,7 @@ FriendType=Status
 UserType=2
 RegExpSubstitute=1
 Substitute="Online":"", "Mobile":"Resources\Mobile.png"
+DynamicVariables=1
 
 [MeasureOnlineIcon3]
 Measure=Plugin
@@ -113,6 +134,7 @@ FriendType=Status
 UserType=3
 RegExpSubstitute=1
 Substitute="Online":"", "Mobile":"Resources\Mobile.png"
+DynamicVariables=1
 
 [MeasureOnlineIcon4]
 Measure=Plugin
@@ -122,6 +144,7 @@ FriendType=Status
 UserType=4
 RegExpSubstitute=1
 Substitute="Online":"", "Mobile":"Resources\Mobile.png"
+DynamicVariables=1
 
 [MeasureOnlineIcon5]
 Measure=Plugin
@@ -131,6 +154,7 @@ FriendType=Status
 UserType=5
 RegExpSubstitute=1
 Substitute="Online":"", "Mobile":"Resources\Mobile.png"
+DynamicVariables=1
 ==========================================
 [Image1]
 Measure=Plugin
@@ -138,6 +162,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Photo
 UserType=1
+DynamicVariables=1
 
 [Image2]
 Measure=Plugin
@@ -145,6 +170,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Photo
 UserType=2
+DynamicVariables=1
 
 [Image3]
 Measure=Plugin
@@ -152,6 +178,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Photo
 UserType=3
+DynamicVariables=1
 
 [Image4]
 Measure=Plugin
@@ -159,6 +186,7 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Photo
 UserType=4
+DynamicVariables=1
 
 [Image5]
 Measure=Plugin
@@ -166,60 +194,50 @@ Plugin=VKPlugin.dll
 Type=Friends
 FriendType=Photo
 UserType=5
+DynamicVariables=1
 
 [MeasureImage1]
 Measure=Plugin
-Plugin=Plugins/WebParser.dll
+Plugin=WebParser.dll
 Url=[&Image1]
 Download=1
 DownloadFile="image1.jpg"
+FinishAction=[!UpdateMeter "MeterImage1"]
 
 [MeasureImage2]
 Measure=Plugin
-Plugin=Plugins/WebParser.dll
+Plugin=WebParser.dll
 Url=[&Image2]
 Download=1
 DownloadFile="image2.jpg"
+FinishAction=[!UpdateMeter "MeterImage2"]
 
 [MeasureImage3]
 Measure=Plugin
-Plugin=Plugins/WebParser.dll
+Plugin=WebParser.dll
 Url=[&Image3]
 Download=1
 DownloadFile="image3.jpg"
+FinishAction=[!UpdateMeter "MeterImage3"]
 
 [MeasureImage4]
 Measure=Plugin
-Plugin=Plugins/WebParser.dll
+Plugin=WebParser.dll
 Url=[&Image4]
 Download=1
 DownloadFile="image4.jpg"
+FinishAction=[!UpdateMeter "MeterImage4"]
 
 [MeasureImage5]
 Measure=Plugin
-Plugin=Plugins/WebParser.dll
+Plugin=WebParser.dll
 Url=[&Image5]
 Download=1
 DownloadFile="image5.jpg"
+FinishAction=[!UpdateMeter "MeterImage5"]
 ==========================================
 
 -----------------------------------------------------------------------------------
-
-[TitleVK]
-Meter=String
-Text=ВКонтакте
-X=60
-Y=20
-StringStyle=BOLD
-FontFace=Calibri
-FontSize=12
-FontColor=250,250,250,255
-AntiAlias=1
-Hidden=1
-LeftMouseUpAction=["#URL1#"]
-MouseOverAction=[!SetOption "#CURRENTSECTION#" "FontColor" "#FontColorOn#"][!UpdateMeter #CURRENTSECTION#][!Redraw]
-MouseLeaveAction=[!SetOption "#CURRENTSECTION#" "FontColor" "#FontColor#"][!UpdateMeter #CURRENTSECTION#][!Redraw]
-==========================================
 
 [StyleNames]
 FontFace=Calibri
@@ -302,6 +320,8 @@ MeterStyle=StyleOnlineIcons
 
 [StyleImages]
 PreserveAspectRatio=1
+OnUpdateAction=[!Redraw]
+DynamicVariables=1
 W=40
 H=40
 X=10
@@ -321,7 +341,7 @@ MeterStyle=StyleImages
 [MeterImage3]
 Meter=IMAGE
 ImageName=#CURRENTPATH#\DownloadFile\image3.jpg
-MeterStyle=StyleImages
+MeterStyle=StyleImages	
 
 [MeterImage4]
 Meter=IMAGE
