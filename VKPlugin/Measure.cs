@@ -60,14 +60,12 @@ namespace Plugin
                         path = path.Replace("\\" + path.Split('\\')[7], "\\");
                         MeasurePath.Add(_type, path);
 
-                        AppDomain.CurrentDomain.AssemblyResolve += OnCurrentDomainOnAssemblyResolve;
-
                         // Load NAudio library.
-                        //AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
-                        //{
-                        //    var pathc = string.Format(path + "{0}.dll", "NAudio");
-                        //    return Assembly.LoadFrom(pathc);
-                        //};
+                        AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
+                        {
+                            var pathc = string.Format(path + "{0}.dll", "NAudio");
+                            return Assembly.LoadFrom(pathc);
+                        };
                     }
 
                     #endregion Path + LoadDll
@@ -209,12 +207,6 @@ namespace Plugin
                         (API.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
                     break;
             }
-        }
-
-        private Assembly OnCurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            var pathc = string.Format(MeasurePath[MeasureType.PlayerType] + "{0}.dll", "NAudio");
-            return Assembly.LoadFrom(pathc);
         }
 
         /// <summary>
