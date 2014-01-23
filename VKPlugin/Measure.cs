@@ -17,16 +17,10 @@ namespace Plugin
         public static string FriendsCount { get; private set; }
         public static string SaveAudio { get; private set; }
         public static Dictionary<MeasureType, string> MeasurePath = new Dictionary<MeasureType, string>();
-        private static bool _created;
 
-        private const int DefaultUpdateRate = 20;
-        private int _userCount = 1;
-
+        // Friend and Messages types removed for awhile.
         internal enum MeasureType { PlayerType, FriendsType, MessagesType }
         private MeasureType _type;
-
-        private enum FriendsType { Name, Photo, Id, Status }
-        private FriendsType _friendsType;
 
         private enum PlayerType { Settings, Artist, Title, Duration, Position, State, Repeat, Shuffle, Volume, Progress }
         private PlayerType _audioType;
@@ -41,11 +35,6 @@ namespace Plugin
             string type = api.ReadString("Type", "");
             switch (type.ToUpperInvariant())
             {
-                case "LIST":
-                    if (FriendsCount == null)
-                        FriendsCount = api.ReadString("FriendsCount", "1");
-                    break;
-
                 case "PLAYER":
                     _type = MeasureType.PlayerType;
 
@@ -127,81 +116,6 @@ namespace Plugin
 
                     break;
 
-                case "FRIENDS":
-                    _type = MeasureType.FriendsType;
-                    _userCount = api.ReadInt("UserType", 1);
-
-                    #region Path
-
-                    if (!MeasurePath.ContainsKey(_type))
-                    {
-                        string path = api.ReadPath("Type", "");
-                        path = path.Replace("\\" + path.Split('\\')[7], "\\");
-                        MeasurePath.Add(_type, path);
-                    }
-
-                    #endregion Path
-
-                    #region Update
-
-                    if (!TwoUpdateRate.ContainsKey(_type))
-                        TwoUpdateRate.Add(_type, new Dictionary<int, int>());
-                    if (!TwoUpdateRate[_type].ContainsKey(_userCount))
-                        TwoUpdateRate[_type].Add(_userCount, (int)api.ReadDouble("UpdateRate", DefaultUpdateRate));
-
-                    if (!TwoUpdateCounter.ContainsKey(_type))
-                        TwoUpdateCounter.Add(_type, new Dictionary<int, int>());
-                    if (!TwoUpdateCounter[_type].ContainsKey(_userCount))
-                        TwoUpdateCounter[_type].Add(_userCount, 20);
-
-                    #endregion Update
-
-                    #region Friends
-
-                    string friendtype = api.ReadString("FriendType", "");
-                    switch (friendtype.ToUpperInvariant())
-                    {
-                        case "NAME":
-                            _friendsType = FriendsType.Name;
-                            break;
-
-                        case "PHOTO":
-                            _friendsType = FriendsType.Photo;
-                            break;
-
-                        case "ID":
-                            _friendsType = FriendsType.Id;
-                            break;
-
-                        case "STATUS":
-                            _friendsType = FriendsType.Status;
-                            break;
-
-                        default:
-                            API.Log
-                                (API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
-                            break;
-                    }
-
-                    #endregion Friends
-
-                    break;
-
-                case "MESSAGES":
-                    _type = MeasureType.MessagesType;
-
-                    #region Update
-
-                    if (!OneUpdateRate.ContainsKey(_type))
-                        OneUpdateRate.Add(_type, (int)api.ReadDouble("UpdateRate", DefaultUpdateRate));
-
-                    if (!OneUpdateCounter.ContainsKey(_type))
-                        OneUpdateCounter.Add(_type, 20);
-
-                    #endregion Update
-
-                    break;
-
                 default:
                     API.Log
                         (API.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
@@ -222,54 +136,6 @@ namespace Plugin
 
             switch (type.ToUpperInvariant())
             {
-                case "FRIENDS":
-                    _type = MeasureType.FriendsType;
-                    _userCount = api.ReadInt("UserType", 1);
-
-                    #region Update
-
-                    TwoUpdateCounter[_type][_userCount]++;
-
-                    if (TwoUpdateRate[_type][_userCount] < TwoUpdateCounter[_type][_userCount])
-                    {
-                        Info.UpdateFriends();
-                        string friendtype = api.ReadString("FriendType", "");
-                        switch (friendtype.ToUpperInvariant())
-                        {
-                            case "NAME": _friendsType = FriendsType.Name; break;
-                            case "PHOTO": _friendsType = FriendsType.Photo; break;
-                            case "ID": _friendsType = FriendsType.Id; break;
-                            case "STATUS": _friendsType = FriendsType.Status; break;
-
-                            default:
-                                API.Log
-                                    (API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
-                                break;
-                        }
-                        TwoUpdateCounter[_type][_userCount] = 0;
-                    }
-
-                    #endregion Update
-
-                    break;
-
-                case "MESSAGES":
-                    _type = MeasureType.MessagesType;
-
-                    #region Update
-
-                    OneUpdateCounter[_type]++;
-
-                    if (OneUpdateRate[_type] < OneUpdateCounter[_type])
-                    {
-                        Info.UpdateMessages();
-                        OneUpdateCounter[_type] = 0;
-                    }
-
-                    #endregion Update
-
-                    break;
-
                 case "PLAYER":
                     _type = MeasureType.PlayerType;
                     string playertype = api.ReadString("PlayerType", "");
@@ -303,9 +169,6 @@ namespace Plugin
         {
             switch (_type)
             {
-                case MeasureType.MessagesType:
-                    return (Info.MessagesUnReadCount >= 1) ? 1 : 0;
-
                 case MeasureType.PlayerType:
 
                     #region Player
@@ -342,27 +205,6 @@ namespace Plugin
         {
             switch (_type)
             {
-                case MeasureType.FriendsType:
-
-                    #region Friends
-                    switch (_friendsType)
-                    {
-                        case FriendsType.Name:
-                            return Info.FriendsUserData(_userCount)[0];
-
-                        case FriendsType.Id:
-                            return Info.FriendsUserData(_userCount)[1];
-
-                        case FriendsType.Photo:
-                            return Info.FriendsUserData(_userCount)[2];
-
-                        case FriendsType.Status:
-                            return Info.FriendsUserData(_userCount)[3];
-                    }
-                    #endregion Friends
-
-                    break;
-
                 case MeasureType.PlayerType:
 
                     #region Player
@@ -477,37 +319,6 @@ namespace Plugin
                 ThreadAlive.Add(type, thread);
                 ThreadAlive[type].Start();
             }
-        }
-    }
-
-    /// <summary>
-    /// Update part of Measure.
-    /// </summary>
-    internal partial class Measure
-    {
-        private static Dictionary<MeasureType, int> OneUpdateRate = new Dictionary<MeasureType, int>();
-        private static Dictionary<MeasureType, int> OneUpdateCounter = new Dictionary<MeasureType, int>();
-
-        private static TwoKeyDictionary<MeasureType, int, int> TwoUpdateRate =
-            new TwoKeyDictionary<MeasureType, int, int>();
-
-        private static TwoKeyDictionary<MeasureType, int, int> TwoUpdateCounter =
-            new TwoKeyDictionary<MeasureType, int, int>();
-
-        private static ThreeKeyDictionary<MeasureType, int, int, int> ThreeUpdateRate =
-            new ThreeKeyDictionary<MeasureType, int, int, int>();
-
-        private static ThreeKeyDictionary<MeasureType, int, int, int> ThreeUpdateCounter =
-            new ThreeKeyDictionary<MeasureType, int, int, int>();
-
-        public class TwoKeyDictionary<TKey1, TKey2, TValue> :
-            Dictionary<TKey1, Dictionary<TKey2, TValue>>
-        {
-        }
-
-        public class ThreeKeyDictionary<TKey1, TKey2, TKey3, TValue> :
-            Dictionary<TKey1, Dictionary<TKey2, Dictionary<TKey3, TValue>>>
-        {
         }
     }
 }
