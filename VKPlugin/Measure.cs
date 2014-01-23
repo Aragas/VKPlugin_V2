@@ -1,11 +1,11 @@
-﻿using Plugin.AudioPlayer;
-using Plugin.Forms;
-using Plugin.Information;
-using Rainmeter;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using Plugin.AudioPlayer;
+using Plugin.Forms;
+using Plugin.Information;
+using Rainmeter;
 
 namespace Plugin
 {
@@ -17,6 +17,7 @@ namespace Plugin
         public static string FriendsCount { get; private set; }
         public static string SaveAudio { get; private set; }
         public static Dictionary<MeasureType, string> MeasurePath = new Dictionary<MeasureType, string>();
+        private static bool _created;
 
         private const int DefaultUpdateRate = 20;
         private int _userCount = 1;
@@ -31,19 +32,11 @@ namespace Plugin
         private PlayerType _audioType;
 
         /// <summary>
-        /// Called when Rainmeter is launched. Just once.
-        /// Is called before skin gets data.
-        /// </summary>
-        internal Measure()
-        {
-        }
-
-        /// <summary>
         /// Called when a measure is created (i.e. when Rainmeter is launched or when a skin is refreshed).
         /// Initialize your measure object here.
         /// </summary>
         /// <param name="api">Rainmeter API</param>
-        internal void Initialize(Rainmeter.API api)
+        internal Measure(Rainmeter.API api)
         {
             string type = api.ReadString("Type", "");
             switch (type.ToUpperInvariant())
@@ -67,12 +60,14 @@ namespace Plugin
                         path = path.Replace("\\" + path.Split('\\')[7], "\\");
                         MeasurePath.Add(_type, path);
 
+                        AppDomain.CurrentDomain.AssemblyResolve += OnCurrentDomainOnAssemblyResolve;
+
                         // Load NAudio library.
-                        AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
-                        {
-                            var pathc = string.Format(path + "{0}.dll", "NAudio");
-                            return Assembly.LoadFrom(pathc);
-                        };
+                        //AppDomain.CurrentDomain.AssemblyResolve += (s, e) =>
+                        //{
+                        //    var pathc = string.Format(path + "{0}.dll", "NAudio");
+                        //    return Assembly.LoadFrom(pathc);
+                        //};
                     }
 
                     #endregion Path + LoadDll
@@ -214,6 +209,12 @@ namespace Plugin
                         (API.LogType.Error, "VKPlugin.dll Type=" + type + " not valid");
                     break;
             }
+        }
+
+        private Assembly OnCurrentDomainOnAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var pathc = string.Format(MeasurePath[MeasureType.PlayerType] + "{0}.dll", "NAudio");
+            return Assembly.LoadFrom(pathc);
         }
 
         /// <summary>
@@ -395,16 +396,16 @@ namespace Plugin
         /// Called by Rainmeter when a !CommandMeasure bang is sent to the measure.
         /// </summary>
         /// <param name="command">String containing the arguments to parse.</param>
-        internal void ExecuteBang(string command)
+        internal void ExecuteBang(string args)
         {
             if (!OAuth.TokenIdExist)
             {
                 OAuth.OAuthRun();
-                Player.Execute(command);
+                Player.Execute(args);
             }
             else
             {
-                Player.Execute(command);
+                Player.Execute(args);
             }
         }
 
@@ -412,10 +413,10 @@ namespace Plugin
         /// Called when a measure is disposed (i.e. when Rainmeter is closed or when a skin is refreshed).
         /// Dispose your measure object here.
         /// </summary>
-        internal void Finalize()
+        ~Measure()
         {
         }
-
+        
         /// <summary>
         /// Called from TypeIsAlive(). (Using GetMethods())
         /// </summary>
@@ -457,10 +458,10 @@ namespace Plugin
                     }
                     catch
                     {
-                        #if DEBUG
+#if DEBUG
                         // Debug doesn't work well with GetMethod().
                         Player.Dispose();
-                        #else
+#else
                         try
                         {
                             GetType()
@@ -471,7 +472,7 @@ namespace Plugin
                         {
                             API.Log(API.LogType.Error, type + "Dispose() do not exist.");
                         }
-                        #endif
+#endif
 
                         Thread.CurrentThread.Abort();
                     }
