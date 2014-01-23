@@ -11,15 +11,16 @@ using System.Threading;
 namespace Plugin.AudioPlayer
 {
     // To do:
-    // Save mp3 to disk while playing from url. (Done).
-    // Check if mp3 is saved and play local. !!! (Done)
-    // Play next mp3 after previous (find better method). !!! (Maybe in another life)
     // Optimize download function. Then will work SetPosition. !!! (Maybe in another life)
+
+    // Play next audio don't work. Freezes if click play after next audio.
+    // AudioList and Variables seems good.
+    // Maybe optimize bool FileExists. Takes too much funcs.
 
     public static class Player
     {
         internal enum Playing { Init, Ready }
-        internal static Playing Option;
+        internal static Playing Status;
         
         private static readonly MMDevice DefaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
             (DataFlow.Render, Role.Multimedia);
@@ -29,7 +30,7 @@ namespace Plugin.AudioPlayer
         private static GetStream _gStream;
         private static WaveStream _waveStream; 
         private static WaveChannel32 _audioChannel32;
-        private static IWavePlayer _iWavePlayer = new WaveOut();
+        private static readonly IWavePlayer WavePlayer = new WaveOut();
 
         #region AudioList
 
@@ -98,14 +99,14 @@ namespace Plugin.AudioPlayer
 
         public static PlaybackState PlaybackState
         {
-            get { return _iWavePlayer.PlaybackState; }
+            get { return WavePlayer.PlaybackState; }
         }
 
         public static bool Played
         {
             get
             {
-                if (Option != Playing.Ready)
+                if (Status != Playing.Ready)
                     return false;
                 return _waveStream != null && (Duration < _waveStream.CurrentTime.TotalSeconds);
             }
@@ -165,8 +166,6 @@ namespace Plugin.AudioPlayer
         ///     Execute your command.
         /// </summary>
         /// <param name="command">Your command.</param>
-        /// <param name="token">Your token.</param>
-        /// <param name="id">Your id.</param>
         public static void Execute(string command)
         {
             if (String.IsNullOrEmpty(command)) return;
@@ -187,7 +186,7 @@ namespace Plugin.AudioPlayer
         }
 
         /// <summary>
-        ///     Check if audio file has ended. If true, starts next file. Better put in a loop.
+        /// Check if audio file has ended. If true, starts next file. Better put in a event.
         /// </summary>
         public static void PlayNext()
         {
@@ -209,7 +208,6 @@ namespace Plugin.AudioPlayer
 
         private static void Next()
         {
-            // Check if stopped.
             if (PlaybackState == PlaybackState.Stopped)
                 return;
 
@@ -225,18 +223,18 @@ namespace Plugin.AudioPlayer
 
         private static void Pause()
         {
-            _iWavePlayer.Pause();
+            WavePlayer.Pause();
         }
 
         private static void Play()
         {
-            _iWavePlayer.Play();
+            WavePlayer.Play();
         }
 
         private static void PlayNew()
         {
             DisposeAudio();
-            Option = Playing.Init;
+            Status = Playing.Init;
 
             if (FileExists)
             {
@@ -244,8 +242,8 @@ namespace Plugin.AudioPlayer
                 _gFile.Loaded +=_gFile_Loaded;
                 _waveStream = _gFile.Wave(FilePath);
                 _audioChannel32 = new WaveChannel32(_waveStream) {PadWithZeroes = false};
-                _iWavePlayer.Init(_audioChannel32);
-                _iWavePlayer.PlaybackStopped += _waveOut_PlaybackStopped;
+                WavePlayer.Init(_audioChannel32);
+                WavePlayer.PlaybackStopped += _waveOut_PlaybackStopped;
 
             }
             else
@@ -254,23 +252,23 @@ namespace Plugin.AudioPlayer
                 _gStream.EnoughDataToPlay +=_gStream_EnoughDataToPlay;
                 _waveStream = _gStream.Wave(Url);
                 _audioChannel32 = new WaveChannel32(_waveStream) {PadWithZeroes = false};
-                _iWavePlayer.Init(_audioChannel32);
-                _iWavePlayer.PlaybackStopped += _waveOut_PlaybackStopped;
+                WavePlayer.Init(_audioChannel32);
+                WavePlayer.PlaybackStopped += _waveOut_PlaybackStopped;
             }
 
             _audioChannel32.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
 
-            _iWavePlayer.Play();
+            WavePlayer.Play();
         }
 
         private static void _gStream_EnoughDataToPlay(object sender, EventArgs e)
         {
-            Option = Playing.Ready;
+            Status = Playing.Ready;
         }
 
         private static void _gFile_Loaded(object sender, EventArgs e)
         {
-            Option = Playing.Ready;
+            Status = Playing.Ready;
         }
 
         private static void _waveOut_PlaybackStopped(object sender, StoppedEventArgs e)
@@ -280,7 +278,7 @@ namespace Plugin.AudioPlayer
 
         private static void PlayPause()
         {
-            switch (Option)
+            switch (Status)
             {
                 case Playing.Ready:
 
@@ -308,7 +306,6 @@ namespace Plugin.AudioPlayer
 
         private static void Previous()
         {
-            // Check if stopped.
             if (PlaybackState == PlaybackState.Stopped)
                 return;
 
@@ -419,7 +416,7 @@ namespace Plugin.AudioPlayer
         private static void SetPosition(string value)
         {
 #if DEBUG
-            if (Option != Playing.Ready) return;
+            if (Status != Playing.Ready) return;
             if (value.StartsWith("+") || value.StartsWith("-"))
             {
                 bool plus = (value.Contains("+"));
@@ -465,7 +462,7 @@ namespace Plugin.AudioPlayer
 
         private static void Stop()
         {
-            _iWavePlayer.Stop();
+            WavePlayer.Stop();
             _waveStream.Position = 0;
         }
 
@@ -502,10 +499,9 @@ namespace Plugin.AudioPlayer
 
         private static void DisposeAudio()
         {
-            if (_iWavePlayer != null)
+            if (WavePlayer != null)
             {
-                _iWavePlayer.Stop();
-                //_waveOut.Dispose();
+                WavePlayer.Stop();
             }
 
             if (_waveStream != null)
