@@ -457,10 +457,10 @@ namespace Plugin
                     }
                     catch
                     {
-#if DEBUG
+                        #if DEBUG
                         // Debug doesn't work well with GetMethod().
                         Player.Dispose();
-#else
+                        #else
                         try
                         {
                             GetType()
@@ -471,7 +471,7 @@ namespace Plugin
                         {
                             API.Log(API.LogType.Error, type + "Dispose() do not exist.");
                         }
-#endif
+                        #endif
 
                         Thread.CurrentThread.Abort();
                     }
@@ -502,7 +502,7 @@ namespace Plugin
             new TwoKeyDictionary<MeasureType, int, int>();
 
         private static ThreeKeyDictionary<MeasureType, int, int, int> ThreeUpdateRate =
-    new ThreeKeyDictionary<MeasureType, int, int, int>();
+            new ThreeKeyDictionary<MeasureType, int, int, int>();
 
         private static ThreeKeyDictionary<MeasureType, int, int, int> ThreeUpdateCounter =
             new ThreeKeyDictionary<MeasureType, int, int, int>();

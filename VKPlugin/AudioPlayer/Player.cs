@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using NAudio.CoreAudioApi;
+﻿using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using Plugin.ErrorHandler;
 using Plugin.Forms;
@@ -19,7 +18,7 @@ namespace Plugin.AudioPlayer
 
     public static class Player
     {
-        internal enum Playing { Init, Buffering, Ready }
+        internal enum Playing { Init, Ready }
         internal static Playing Option;
         
         private static readonly MMDevice DefaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
@@ -237,10 +236,12 @@ namespace Plugin.AudioPlayer
         private static void PlayNew()
         {
             DisposeAudio();
+            Option = Playing.Init;
 
             if (FileExists)
             {
                 _gFile = new GetFile();
+                _gFile.Loaded +=_gFile_Loaded;
                 _waveStream = _gFile.Wave(FilePath);
                 _audioChannel32 = new WaveChannel32(_waveStream) {PadWithZeroes = false};
                 _iWavePlayer.Init(_audioChannel32);
@@ -250,6 +251,7 @@ namespace Plugin.AudioPlayer
             else
             {
                 _gStream = new GetStream();
+                _gStream.EnoughDataToPlay +=_gStream_EnoughDataToPlay;
                 _waveStream = _gStream.Wave(Url);
                 _audioChannel32 = new WaveChannel32(_waveStream) {PadWithZeroes = false};
                 _iWavePlayer.Init(_audioChannel32);
@@ -259,6 +261,16 @@ namespace Plugin.AudioPlayer
             _audioChannel32.Volume = DefaultDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
 
             _iWavePlayer.Play();
+        }
+
+        private static void _gStream_EnoughDataToPlay(object sender, EventArgs e)
+        {
+            Option = Playing.Ready;
+        }
+
+        private static void _gFile_Loaded(object sender, EventArgs e)
+        {
+            Option = Playing.Ready;
         }
 
         private static void _waveOut_PlaybackStopped(object sender, StoppedEventArgs e)
@@ -525,8 +537,16 @@ namespace Plugin.AudioPlayer
         }
     }
 
-    internal class GetFile : IDisposable
+    internal sealed class GetFile : IDisposable
     {
+        public event EventHandler Loaded;
+
+        private void OnLoaded(EventArgs e)
+        {
+            if (Loaded != null)
+                Loaded(this, e);
+        }
+
         private Mp3FileReader _reader;
 
         public void Dispose()
@@ -544,12 +564,40 @@ namespace Plugin.AudioPlayer
         public Mp3FileReader Wave(string path)
         {
             _reader = new Mp3FileReader(path);
+            OnLoaded(EventArgs.Empty);
+
             return _reader;
         }
     }
 
-    internal class GetStream : IDisposable
+    internal sealed class GetStream : IDisposable
     {
+        public event EventHandler Downloaded;
+        public event EventHandler Downloading;
+        public event EventHandler EnoughDataToPlay;
+        public event EventHandler Saved;
+
+        private void OnDownloaded(EventArgs e)
+        {
+            if (Downloaded != null)
+                Downloaded(this, e);
+        }
+        private void OnDownloading(EventArgs e)
+        {
+            if (Downloading != null)
+                Downloading(this, e);
+        }
+        private void OnEnoughDataToPlay(EventArgs e)
+        {
+            if (EnoughDataToPlay != null)
+                EnoughDataToPlay(this, e);
+        }
+        private void OnSaved(EventArgs e)
+        {
+            if (Saved != null)
+                Saved(this, e);
+        }
+
         private readonly Thread _downloadThread;
         private Stream _ms = new MemoryStream();
         private Stream _ms1 = new MemoryStream();
@@ -573,10 +621,6 @@ namespace Plugin.AudioPlayer
             {
                 _reader.Dispose();
             }
-            //if (_channel != null)
-            //{
-            //    _channel.Dispose();
-            //}
         }
 
         public Mp3FileReader Wave(string url)
@@ -587,16 +631,11 @@ namespace Plugin.AudioPlayer
                 _downloadThread.Start();
 
             // Pre-buffering some data to allow NAudio to start playing
-            while (_ms.Length < 32 * 1024 * 8)
-            {
-                Player.Option = Player.Playing.Buffering;
-
-                Thread.Sleep(100); //Find better method.
-            }
+            while (_ms.Length < 32 * 1024 * 8) { }
 
             if (_ms.Length > 32 * 1024 * 8)
-                Player.Option = Player.Playing.Ready;
-
+                OnEnoughDataToPlay(EventArgs.Empty);
+            
             _ms.Position = 0;
             _reader = new Mp3FileReader(_ms);
             return _reader;
@@ -617,6 +656,8 @@ namespace Plugin.AudioPlayer
             using (WebResponse response = WebRequest.Create(Url).GetResponse())
             using (Stream stream = response.GetResponseStream())
             {
+                OnDownloading(EventArgs.Empty);
+
                 var buffer = new byte[16 * 1024]; // 16Kb chunks
                 int read;
                 while (stream != null && (read = stream.Read(buffer, 0, buffer.Length)) > 0)
@@ -626,6 +667,8 @@ namespace Plugin.AudioPlayer
                     _ms.Write(buffer, 0, read);
                     _ms.Position = pos;
                 }
+
+                OnDownloaded(EventArgs.Empty);
             }
         }
 
@@ -634,6 +677,8 @@ namespace Plugin.AudioPlayer
             using (WebResponse response = WebRequest.Create(Url).GetResponse())
             using (Stream stream = response.GetResponseStream())
             {
+                OnDownloading(EventArgs.Empty);
+
                 var buffer = new byte[32 * 1024]; // 32Kb chunks
                 int read;
                 while (stream != null && (read = stream.Read(buffer, 0, buffer.Length)) > 0)
@@ -647,10 +692,14 @@ namespace Plugin.AudioPlayer
                     _ms1.Position = pos;
                 }
 
+                OnDownloaded(EventArgs.Empty);
+
                 using (Stream file = File.OpenWrite(Player.FilePath))
                 {
                     CopyStream(_ms1, file);
                 }
+
+                OnSaved(EventArgs.Empty);
             }
         }
     }
