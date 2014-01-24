@@ -17,7 +17,7 @@ namespace Plugin.AudioPlayer
     // AudioList and Variables seems good.
     // Maybe optimize bool FileExists. Takes too much funcs.
 
-    public static class Player
+    public static class VKPlayer
     {
         internal enum Playing { Init, Ready }
         internal static Playing Status;
@@ -129,7 +129,7 @@ namespace Plugin.AudioPlayer
 
         public static bool SaveAudio
         {
-            get { return Convert.ToBoolean(Measure.SaveAudio); }
+            get { return Convert.ToBoolean(MeasuresHandler.SaveAudio); }
         }
 
         public static double State
@@ -474,7 +474,7 @@ namespace Plugin.AudioPlayer
         {
             get
             {
-                string path = Measure.MeasurePath[Measure.MeasureType.PlayerType] + "Music\\";
+                string path = MeasuresHandler.MeasurePath[MeasuresHandler.MeasureType.PlayerType] + "Music\\";
 
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
@@ -601,7 +601,7 @@ namespace Plugin.AudioPlayer
 
         public GetStream()
         {
-            _downloadThread = Player.SaveAudio ? new Thread(DownloadSave) : new Thread(Download);
+            _downloadThread = VKPlayer.SaveAudio ? new Thread(DownloadSave) : new Thread(Download);
         }
 
         public long Position { get { return _ms.Position; } set { _ms.Position = value; }}
@@ -690,7 +690,7 @@ namespace Plugin.AudioPlayer
 
                 OnDownloaded(EventArgs.Empty);
 
-                using (Stream file = File.OpenWrite(Player.FilePath))
+                using (Stream file = File.OpenWrite(VKPlayer.FilePath))
                 {
                     CopyStream(_ms1, file);
                 }

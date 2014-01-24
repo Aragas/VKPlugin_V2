@@ -73,10 +73,11 @@
       <DependentUpon>OAuth.cs</DependentUpon>
     </Compile>
     <Compile Include="Information\Info.cs" />
+    <Compile Include="Measures.cs" />
     <Compile Include="Methods\Audio.cs" />
     <Compile Include="Methods\Friends.cs" />
     <Compile Include="Methods\Messages.cs" />
-    <Compile Include="Measure.cs" />
+    <Compile Include="MeasuresHandler.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

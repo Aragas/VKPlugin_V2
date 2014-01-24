@@ -32,7 +32,7 @@ namespace Plugin.Information
         {
             get
             {
-                return _friendsCount == 0 ? Convert.ToInt32(Measure.FriendsCount) : _friendsCount;
+                return _friendsCount == 0 ? Convert.ToInt32(MeasuresHandler.FriendsCount) : _friendsCount;
             }
         }
 

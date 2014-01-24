@@ -11,12 +11,15 @@ namespace Plugin
         [DllExport]
         public static void Initialize(ref IntPtr data, IntPtr rm)
         {
-            data = GCHandle.ToIntPtr(GCHandle.Alloc(new Measure(new Rainmeter.API(rm))));
+            data = GCHandle.ToIntPtr(GCHandle.Alloc(new MeasuresHandler(new Rainmeter.API(rm))));
         }
 
         [DllExport]
-        public static void Finalize(IntPtr data)
+        public static void Finalize(IntPtr data, IntPtr rm)
         {
+            //MeasureHandler measure = (MeasureHandler)GCHandle.FromIntPtr(data).Target;
+            //measure.Finalize(new Rainmeter.API(rm));
+
             GCHandle.FromIntPtr(data).Free();
 
             if (StringBuffer != IntPtr.Zero)
@@ -29,21 +32,21 @@ namespace Plugin
         [DllExport]
         public static void Reload(IntPtr data, IntPtr rm, ref double maxValue)
         {
-            Measure measure = (Measure)GCHandle.FromIntPtr(data).Target;
+            MeasuresHandler measure = (MeasuresHandler)GCHandle.FromIntPtr(data).Target;
             measure.Reload(new Rainmeter.API(rm), ref maxValue);
         }
 
         [DllExport]
         public static double GetDouble(IntPtr data)
         {
-            Measure measure = (Measure)GCHandle.FromIntPtr(data).Target;
+            MeasuresHandler measure = (MeasuresHandler)GCHandle.FromIntPtr(data).Target;
             return measure.GetDouble();
         }
 
         [DllExport]
         public static IntPtr GetString(IntPtr data)
         {
-            Measure measure = (Measure)GCHandle.FromIntPtr(data).Target;
+            MeasuresHandler measure = (MeasuresHandler)GCHandle.FromIntPtr(data).Target;
             if (StringBuffer != IntPtr.Zero)
             {
                 Marshal.FreeHGlobal(StringBuffer);
@@ -62,7 +65,7 @@ namespace Plugin
         [DllExport]
         public static void ExecuteBang(IntPtr data, IntPtr args)
         {
-            Measure measure = (Measure)GCHandle.FromIntPtr(data).Target;
+            MeasuresHandler measure = (MeasuresHandler)GCHandle.FromIntPtr(data).Target;
             measure.ExecuteBang(Marshal.PtrToStringUni(args));
         }
     }
