@@ -13,13 +13,10 @@ namespace Plugin
     /// </summary>
     internal partial class MeasuresHandler
     {
-        Player player = new Player();
-        Friends friends = new Friends();
-        Messages messages = new Messages();
-
         public static string FriendsCount { get; private set; }
         public static string SaveAudio { get; private set; }
-        public static Dictionary<MeasureType, string> MeasurePath = new Dictionary<MeasureType, string>();
+        public static readonly Dictionary<MeasureType, string> MeasurePath = new Dictionary<MeasureType, string>();
+        private readonly Dictionary<MeasureType, Measure> Measures = new Dictionary<MeasureType, Measure>(); 
 
         internal enum MeasureType { PlayerType, FriendsType, MessagesType }
         private MeasureType _type;
@@ -40,17 +37,33 @@ namespace Plugin
                     break;
 
                 case "PLAYER":
-                    player.Init(api, ref _type);
+                    _type = MeasureType.PlayerType;
+
+                    if (!Measures.ContainsKey(_type))
+                        Measures.Add(_type, new Player());
+
+                    Measures[_type].Init(api);
 
                     TypeIsAlive(api, _type);
                     break;
 
                 case "FRIENDS":
-                    friends.Init(api, ref _type);
+                    _type = MeasureType.FriendsType;
+
+                    if (!Measures.ContainsKey(_type))
+                        Measures.Add(_type, new Friends());
+
+                    Measures[_type].Init(api);
+
                     break;
 
                 case "MESSAGES":
-                    messages.Init(api, ref _type);
+                    _type = MeasureType.MessagesType;
+
+                    if (!Measures.ContainsKey(_type))
+                        Measures.Add(_type, new Messages());
+
+                    Measures[_type].Init(api);
                     break;
 
                 default:
@@ -74,15 +87,18 @@ namespace Plugin
             switch (type.ToUpperInvariant())
             {
                 case "PLAYER":
-                    player.Reload(api, ref _type);
+                    _type = MeasureType.PlayerType;
+                    Measures[_type].Reload(api);
                     break;
 
                 case "FRIENDS":
-                    friends.Reload(api, ref _type);
+                    _type = MeasureType.FriendsType;
+                    Measures[_type].Reload(api);
                     break;
 
                 case "MESSAGES":
-                    messages.Reload(api, ref _type);
+                    _type = MeasureType.MessagesType;
+                    Measures[_type].Reload(api);
                     break;
 
                 default:
@@ -101,13 +117,13 @@ namespace Plugin
             switch (_type)
             {
                 case MeasureType.PlayerType:
-                    return player.Double();
+                    return Measures[_type].Double();
 
                 case MeasureType.FriendsType:
-                    return friends.Double();
+                    return Measures[_type].Double();
 
                 case MeasureType.MessagesType:
-                    return messages.Double();
+                    return Measures[_type].Double();
             }
 
             return 0.0;
@@ -118,13 +134,13 @@ namespace Plugin
             switch (_type)
             {
                 case MeasureType.PlayerType:
-                    return player.String();
+                    return Measures[_type].String();
 
                 case MeasureType.FriendsType:
-                    return friends.String();
+                    return Measures[_type].String();
 
                 case MeasureType.MessagesType:
-                    return messages.String();
+                    return Measures[_type].String();
             }
             return null;
         }
@@ -156,7 +172,7 @@ namespace Plugin
             switch (type.ToUpperInvariant())
             {
                 case "PLAYER":
-                    player.Dispose();
+                    Measures[_type].Dispose();
                     break;
             }
         }
@@ -166,7 +182,7 @@ namespace Plugin
         /// </summary>
         private void PlayerTypeDispose()
         {
-            player.Dispose();
+            Measures[_type].Dispose();
         }
     }
 

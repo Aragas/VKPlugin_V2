@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using Plugin.AudioPlayer;
 using Plugin.Information;
 using Rainmeter;
@@ -13,8 +11,8 @@ namespace Plugin
     {
         class Measure : IDisposable
         {
-            public virtual void Init(Rainmeter.API api, ref MeasureType type) { }
-            public virtual void Reload(Rainmeter.API api, ref MeasureType type) { }
+            public virtual void Init(Rainmeter.API api) { }
+            public virtual void Reload(Rainmeter.API api) { }
             public virtual double Double() { return 0.0; }
             public virtual string String() { return null; }
             public virtual void Dispose() { }
@@ -25,9 +23,9 @@ namespace Plugin
             private enum PlayerType { Settings, Artist, Title, Duration, Position, State, Repeat, Shuffle, Volume, Progress }
             private PlayerType _audioType;
 
-            public override void Init(Rainmeter.API api, ref MeasureType type)
+            public override void Init(Rainmeter.API api)
             {
-                type = MeasureType.PlayerType;
+                var type = MeasureType.PlayerType;
 
                 #region Path + LoadDll
 
@@ -104,7 +102,7 @@ namespace Plugin
 
             }
 
-            public override void Reload(Rainmeter.API api, ref MeasureType type)
+            public override void Reload(Rainmeter.API api)
             {
                 string playertype = api.ReadString("PlayerType", "");
 
@@ -184,9 +182,9 @@ namespace Plugin
 
             private int _userCount = 1;
 
-            public override void Init(API api, ref MeasureType type)
+            public override void Init(API api)
             {
-                type = MeasureType.FriendsType;
+                var type = MeasureType.FriendsType;
                 _userCount = api.ReadInt("UserType", 1);
 
                 #region Path
@@ -244,9 +242,9 @@ namespace Plugin
                 #endregion Friends
             }
 
-            public override void Reload(API api, ref MeasureType type)
+            public override void Reload(API api)
             {
-                type = MeasureType.FriendsType;
+                var type = MeasureType.FriendsType;
                 _userCount = api.ReadInt("UserType", 1);
 
                 #region Update
@@ -308,9 +306,9 @@ namespace Plugin
 
         class Messages : Measure
         {
-            public override void Init(API api, ref MeasureType type)
+            public override void Init(API api)
             {
-                type = MeasureType.MessagesType;
+                var type = MeasureType.MessagesType;
 
                 #region Update
 
@@ -323,9 +321,9 @@ namespace Plugin
                 #endregion Update
             }
 
-            public override void Reload(API api, ref MeasureType type)
+            public override void Reload(API api)
             {
-                type = MeasureType.MessagesType;
+                var type = MeasureType.MessagesType;
                 #region Update
 
                 OneUpdateCounter[type]++;
