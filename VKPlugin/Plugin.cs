@@ -37,7 +37,7 @@ namespace Plugin
         }
 
         [DllExport]
-        public static double GetDouble(IntPtr data)
+        public static double Update(IntPtr data)
         {
             MeasuresHandler measure = (MeasuresHandler)GCHandle.FromIntPtr(data).Target;
             return measure.GetDouble();

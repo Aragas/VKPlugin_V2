@@ -9,6 +9,9 @@ namespace Plugin
 {
     internal partial class MeasuresHandler
     {
+        /// <summary>
+        /// Basic measure.
+        /// </summary>
         class Measure : IDisposable
         {
             public virtual void Init(Rainmeter.API api) { }
@@ -108,11 +111,42 @@ namespace Plugin
 
                 #region Player
 
-                switch (playertype.ToUpperInvariant())
+                switch (playertype.ToUpper())
                 {
-                    // For autoplay.
+                    case "ARTIST":
+                        _audioType = PlayerType.Artist;
+                        break;
+
+                    case "TITLE":
+                        _audioType = PlayerType.Title;
+                        break;
+
                     case "STATE":
                         _audioType = PlayerType.State;
+                        break;
+
+                    case "DURATION":
+                        _audioType = PlayerType.Duration;
+                        break;
+
+                    case "POSITION":
+                        _audioType = PlayerType.Position;
+                        break;
+
+                    case "REPEAT":
+                        _audioType = PlayerType.Repeat;
+                        break;
+
+                    case "SHUFFLE":
+                        _audioType = PlayerType.Shuffle;
+                        break;
+
+                    case "VOLUME":
+                        _audioType = PlayerType.Volume;
+                        break;
+
+                    case "PROGRESS":
+                        _audioType = PlayerType.Progress;
                         break;
                 }
 
@@ -132,7 +166,6 @@ namespace Plugin
                         return Math.Round(VKPlayer.Position);
 
                     case PlayerType.State:
-                        //if (VKPlayer.Played) VKPlayer.PlayNext();
                         return VKPlayer.State;
 
                     case PlayerType.Repeat:

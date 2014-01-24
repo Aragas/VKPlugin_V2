@@ -16,6 +16,7 @@ namespace Plugin
         public static string FriendsCount { get; private set; }
         public static string SaveAudio { get; private set; }
         public static readonly Dictionary<MeasureType, string> MeasurePath = new Dictionary<MeasureType, string>();
+
         private readonly Dictionary<MeasureType, Measure> Measures = new Dictionary<MeasureType, Measure>(); 
 
         internal enum MeasureType { PlayerType, FriendsType, MessagesType }
@@ -114,16 +115,19 @@ namespace Plugin
         /// <returns>Return the numerical value for the measure here.</returns>
         internal double GetDouble()
         {
-            switch (_type)
+            if (Measures.ContainsKey(_type))
             {
-                case MeasureType.PlayerType:
-                    return Measures[_type].Double();
+                switch (_type)
+                {
+                    case MeasureType.PlayerType:
+                        return Measures[_type].Double();
 
-                case MeasureType.FriendsType:
-                    return Measures[_type].Double();
+                    case MeasureType.FriendsType:
+                        return Measures[_type].Double();
 
-                case MeasureType.MessagesType:
-                    return Measures[_type].Double();
+                    case MeasureType.MessagesType:
+                        return Measures[_type].Double();
+                }
             }
 
             return 0.0;
@@ -131,16 +135,19 @@ namespace Plugin
 
         internal string GetString()
         {
-            switch (_type)
+            if (Measures.ContainsKey(_type))
             {
-                case MeasureType.PlayerType:
-                    return Measures[_type].String();
+                switch (_type)
+                {
+                    case MeasureType.PlayerType:
+                        return Measures[_type].String();
 
-                case MeasureType.FriendsType:
-                    return Measures[_type].String();
+                    case MeasureType.FriendsType:
+                        return Measures[_type].String();
 
-                case MeasureType.MessagesType:
-                    return Measures[_type].String();
+                    case MeasureType.MessagesType:
+                        return Measures[_type].String();
+                }
             }
             return null;
         }

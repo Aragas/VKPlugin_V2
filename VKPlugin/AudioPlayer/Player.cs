@@ -551,10 +551,6 @@ namespace Plugin.AudioPlayer
             {
                 _reader.Dispose();
             }
-            //if (_channel != null)
-            //{
-            //    _channel.Dispose();
-            //}
         }
 
         public Mp3FileReader Wave(string path)
