@@ -77,7 +77,6 @@
     <Compile Include="Methods\Audio.cs" />
     <Compile Include="Methods\Friends.cs" />
     <Compile Include="Methods\Messages.cs" />
-    <Compile Include="MeasuresHandler.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -86,6 +85,7 @@
     <Content Include="libs\license.txt" />
     <Content Include="libs\NAudio.dll" />
     <Content Include="libs\NAudio.xml" />
+    <Content Include="Measure.inc" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Forms\OAuth.en.resx">

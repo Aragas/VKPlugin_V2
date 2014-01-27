@@ -25,7 +25,7 @@ namespace Plugin.AudioPlayer
         private static readonly MMDevice DefaultDevice = new MMDeviceEnumerator().GetDefaultAudioEndpoint
             (DataFlow.Render, Role.Multimedia);
 
-        private static Audio _audio; 
+        private static GetAudio _audio; 
         private static GetFile _gFile;
         private static GetStream _gStream;
         private static WaveStream _waveStream; 
@@ -44,7 +44,7 @@ namespace Plugin.AudioPlayer
             {
                 if (ArrayExists) return _array;
 
-                _audio = new Audio
+                _audio = new GetAudio
                 {
                     Token = Token,
                     Id = Id
@@ -129,7 +129,7 @@ namespace Plugin.AudioPlayer
 
         public static bool SaveAudio
         {
-            get { return Convert.ToBoolean(MeasuresHandler.SaveAudio); }
+            get { return Convert.ToBoolean(MeasureHandler.Player.SaveAudio); }
         }
 
         public static double State
@@ -474,7 +474,7 @@ namespace Plugin.AudioPlayer
         {
             get
             {
-                string path = MeasuresHandler.MeasurePath[MeasuresHandler.MeasureType.PlayerType] + "Music\\";
+                string path = MeasureHandler.Player.Path + "Music\\";
 
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);

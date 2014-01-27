@@ -8,15 +8,36 @@ namespace Plugin.Forms
     /// </summary>
     public partial class OAuth : Form
     {
-        /// <summary>
-        ///     Get your Id (Use after OAuthRun()).
-        /// </summary>
-        public static string Id { get; private set; }
+        private static bool _runned;
+
+        private static string _id;
+        private static string _token;
 
         /// <summary>
-        ///     Get your Token (Use after OAuthRun()).
+        ///     Get your Id
         /// </summary>
-        public static string Token { get; private set; }
+        public static string Id 
+        {
+            get
+            {
+                if (_id == null)
+                    OAuthRun();
+                return _id;
+            } 
+        }
+
+        /// <summary>
+        ///     Get your Token
+        /// </summary>
+        public static string Token
+        {
+            get
+            {
+                if (_token == null)
+                    OAuthRun();
+                return _token;
+            } 
+        }
 
         private OAuth()
         {
@@ -26,7 +47,7 @@ namespace Plugin.Forms
 
         public static bool TokenIdExist
         {
-            get { return (Token != null || Id != null); }
+            get { return (_token != null || Id != _id); }
         }
 
         private static string Url
@@ -49,7 +70,8 @@ namespace Plugin.Forms
         /// </summary>
         public static void OAuthRun()
         {
-            Application.Run(new OAuth());
+            if (!_runned)
+                Application.Run(new OAuth());
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -61,8 +83,10 @@ namespace Plugin.Forms
         {
             string data = webBrowser1.Url.ToString().Split('#')[1];
 
-            Token = data.Split('&')[0].Split('=')[1];
-            Id = data.Split('=')[3];
+            _token = data.Split('&')[0].Split('=')[1];
+            _id = data.Split('=')[3];
+
+            _runned = true;
 
             Close();
         }

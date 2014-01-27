@@ -4,7 +4,7 @@ using Plugin.ErrorHandler;
 
 namespace Plugin.Methods
 {
-    public class Messages
+    public class GetMessages
     {
         /// <summary>
         ///     Set your Token.

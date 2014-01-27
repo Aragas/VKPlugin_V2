@@ -4,7 +4,7 @@ using Plugin.ErrorHandler;
 
 namespace Plugin.Methods
 {
-    public class Audio
+    public class GetAudio
     {
         private bool _disposed;
 

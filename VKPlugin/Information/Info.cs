@@ -11,14 +11,13 @@ namespace Plugin.Information
     {
         #region Internal
 
-        private static readonly Friends Friends = new Friends
+        private static readonly GetFriends GetFriends = new GetFriends
         {
             Token = Token,
             Id = Id,
-            Count = FriendsCount
         };
 
-        private static readonly Messages Messages = new Messages
+        private static readonly GetMessages GetMessages = new GetMessages
         {
             Token = Token
         };
@@ -28,14 +27,7 @@ namespace Plugin.Information
 
         private static string _token;
 
-        private static int FriendsCount
-        {
-            get
-            {
-                return _friendsCount == 0 ? Convert.ToInt32(MeasuresHandler.FriendsCount) : _friendsCount;
-            }
-        }
-
+        
         private static string Id
         {
             get
@@ -87,7 +79,7 @@ namespace Plugin.Information
             {
                 if (_userArray != null)
                     return _userArray;
-                _userArray = Friends.OnlineString();
+                _userArray = GetFriends.OnlineString();
                 return _userArray;
             }
         }
@@ -124,7 +116,7 @@ namespace Plugin.Information
             {
                 if (_messagesUnReadCount != null)
                     return Convert.ToInt32(_messagesUnReadCount);
-                _messagesUnReadCount = Convert.ToString(Messages.UnReadMessages());
+                _messagesUnReadCount = Convert.ToString(GetMessages.UnReadMessages());
                 return Convert.ToInt32(_messagesUnReadCount);
             }
         }

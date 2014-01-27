@@ -4,7 +4,7 @@ using Plugin.ErrorHandler;
 
 namespace Plugin.Methods
 {
-    public class Friends
+    public class GetFriends
     {
         /// <summary>
         ///     Set your Id.
