@@ -129,7 +129,7 @@ namespace Plugin.AudioPlayer
 
         public static bool SaveAudio
         {
-            get { return Convert.ToBoolean(MeasureHandler.Player.SaveAudio); }
+            get { return Convert.ToBoolean(Player.SaveAudio); }
         }
 
         public static double State
@@ -474,7 +474,7 @@ namespace Plugin.AudioPlayer
         {
             get
             {
-                string path = MeasureHandler.Player.Path + "Music\\";
+                string path = Player.Path + "Music\\";
 
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);

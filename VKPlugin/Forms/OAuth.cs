@@ -8,8 +8,6 @@ namespace Plugin.Forms
     /// </summary>
     public partial class OAuth : Form
     {
-        private static bool _runned;
-
         private static string _id;
         private static string _token;
 
@@ -47,7 +45,7 @@ namespace Plugin.Forms
 
         public static bool TokenIdExist
         {
-            get { return (_token != null || Id != _id); }
+            get { return (_token != null || _token != null); }
         }
 
         private static string Url
@@ -70,8 +68,7 @@ namespace Plugin.Forms
         /// </summary>
         public static void OAuthRun()
         {
-            if (!_runned)
-                Application.Run(new OAuth());
+            Application.Run(new OAuth());
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -85,8 +82,6 @@ namespace Plugin.Forms
 
             _token = data.Split('&')[0].Split('=')[1];
             _id = data.Split('=')[3];
-
-            _runned = true;
 
             Close();
         }

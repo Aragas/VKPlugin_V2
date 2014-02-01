@@ -72,8 +72,9 @@
     <Compile Include="Forms\OAuth.Designer.cs">
       <DependentUpon>OAuth.cs</DependentUpon>
     </Compile>
-    <Compile Include="Information\Info.cs" />
-    <Compile Include="Measures.cs" />
+    <Compile Include="Information\Info.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Methods\Audio.cs" />
     <Compile Include="Methods\Friends.cs" />
     <Compile Include="Methods\Messages.cs" />

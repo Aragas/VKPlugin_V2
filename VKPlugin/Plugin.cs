@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Plugin.AudioPlayer;
@@ -10,38 +9,6 @@ using Rainmeter;
 
 namespace Plugin
 {
-    public static class MeasureHandler
-    {
-        //public static Friends Friends;
-        //public static Messages Messages;
-
-        public static Player Player;
-
-        public static void GetMeasure(string type, ref Measure measure)
-        {
-            switch (type.ToUpper())
-            {
-                case "PLAYER":
-                    if (Player == null)
-                        Player = new Player();
-                    measure = Player;
-                    break;
-
-                //case "FRIENDS":
-                //    if (Friends == null)
-                //        Friends = new Friends();
-                //    measure = Friends;
-                //    break;
-
-                //case "MESSAGES":
-                //    if (Messages == null)
-                //        Messages = new Messages();
-                //    measure = Messages;
-                //    break;
-            }
-        }
-    }
-
     public class Measure
     {
         public virtual void Init(Rainmeter.API api) { }
@@ -50,6 +17,133 @@ namespace Plugin
         public virtual string GetString() { return null; }
         public virtual void ExecuteBang(string args) { }
         public virtual void Dispose() { }
+    }
+
+    public class Friends : Measure
+    {
+        private enum FriendsType { Id, Name, Photo, Status }
+        private FriendsType _friendsType;
+
+        private int _userCount = 1;
+        private int _count;
+        private int _rate;
+
+        public override void Init(API api)
+        {
+            _rate = api.ReadInt("UpdateRate", 20);
+            _userCount = api.ReadInt("UserType", 1);
+
+            #region Friends
+
+            string friendtype = api.ReadString("FriendType", "");
+            switch (friendtype.ToUpperInvariant())
+            {
+                case "NAME":
+                    _friendsType = FriendsType.Name;
+                    break;
+
+                case "PHOTO":
+                    _friendsType = FriendsType.Photo;
+                    break;
+
+                case "ID":
+                    _friendsType = FriendsType.Id;
+                    break;
+
+                case "STATUS":
+                    _friendsType = FriendsType.Status;
+                    break;
+
+                default:
+                    API.Log
+                        (API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
+                    break;
+            }
+
+            #endregion Friends
+        }
+
+        public override void Reload(API api, ref double maxValue)
+        {
+            if (_count >= _rate)
+            {
+                Info.UpdateFriends();
+                _count = 0;
+            }
+            _count++;
+
+            #region Friends
+
+            string friendtype = api.ReadString("FriendType", "");
+            switch (friendtype.ToUpperInvariant())
+            {
+                case "NAME":
+                    _friendsType = FriendsType.Name;
+                    break;
+                case "PHOTO":
+                    _friendsType = FriendsType.Photo;
+                    break;
+                case "ID":
+                    _friendsType = FriendsType.Id;
+                    break;
+                case "STATUS":
+                    _friendsType = FriendsType.Status;
+                    break;
+
+                default:
+                    API.Log
+                        (API.LogType.Error, "VKPlugin.dll FriendType=" + friendtype + " not valid");
+                    break;
+            }
+
+            #endregion Friends
+        }
+
+        public override string GetString()
+        {
+            switch (_friendsType)
+            {
+                case FriendsType.Name:
+                    return Info.FriendsUserData(_userCount)[0];
+
+                case FriendsType.Id:
+                    return Info.FriendsUserData(_userCount)[1];
+
+                case FriendsType.Photo:
+                    return Info.FriendsUserData(_userCount)[2];
+
+                case FriendsType.Status:
+                    return Info.FriendsUserData(_userCount)[3];
+            }
+
+            return base.GetString();
+        }
+    }
+
+    public class Messages : Measure
+    {
+        private int _count;
+        private int _rate;
+
+        public override void Init(API api)
+        {
+            _rate = api.ReadInt("UpdateRate", 20);
+        }
+
+        public override void Reload(API api, ref double maxValue)
+        {
+            if (_count > _rate)
+            {
+                Info.UpdateMessages();
+                _count = 0;
+            }
+            _count++;
+        }
+
+        public override double Update()
+        {
+            return Info.MessagesUnReadCount >= 1 ? 1 : base.Update();
+        }
     }
 
     public class Player : Measure
@@ -69,8 +163,8 @@ namespace Plugin
         }
         private PlayerType _audioType;
 
-        public string SaveAudio { get; private set; }
-        public string Path { get; private set; }
+        public static string SaveAudio { get; private set; }
+        public static string Path { get; private set; }
 
         public override void Init(Rainmeter.API api)
         {
@@ -261,6 +355,24 @@ namespace Plugin
     {
         private static IntPtr StringBuffer = IntPtr.Zero;
 
+        private static void GetMeasure(string type, ref Measure measure)
+        {
+            switch (type.ToUpper())
+            {
+                case "PLAYER":
+                    measure = new Player();
+                    break;
+
+                case "FRIENDS":
+                    measure = new Friends();
+                    break;
+
+                case "MESSAGES":
+                    measure = new Messages();
+                    break;
+            }
+        }
+
         [DllExport]
         public static void Initialize(ref IntPtr data, IntPtr rm)
         {
@@ -270,7 +382,7 @@ namespace Plugin
 
             Measure measure = null;
 
-            MeasureHandler.GetMeasure(type, ref measure);
+            GetMeasure(type, ref measure);
             measure.Init(api);
 
             data = GCHandle.ToIntPtr(GCHandle.Alloc(measure));
